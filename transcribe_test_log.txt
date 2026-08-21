@@ -1,0 +1,79 @@
+=== TRANSCRIPTION DIAGNOSTIC RUN ===
+Time: 2026-08-21 18:18:52
+GEMINI_API_KEY exists: True
+OPENROUTER_API_KEY exists: True
+GROQ_API_KEY exists: False
+Testing URL download...
+[*] Universal Link Integration: Analyzing online stream metadata...
+[*] Using yt_dlp to download audio stream directly...
+🟢 [AUDIO CHECK]: Ingestion stream verified. Size: 0.36 MB
+Audio buffer verified. Size: 0.36 MB
+MIME type: audio/webm
+Display name: stream.webm
+
+Testing transcription...
+[*] Contacting Gemini API for transcription...
+[*] Uploading 'stream.webm' (0.36 MB) to Gemini Files API...
+[*] File uploaded successfully to Gemini. Name: files/ey6bvbd8tqhu
+[*] Waiting for Gemini to process the media file...
+[*] Media file is active and ready for transcription.
+[*] Generating transcription using model: models/gemini-omni-flash-preview...
+[!] Model models/gemini-omni-flash-preview failed: Gemini API Error 429 with models/gemini-omni-flash-preview: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-omni-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-omni-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-omni-flash\nPlease retry in 57.504445607s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-omni-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-omni-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-omni-flash"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "57s"
+      }
+    ]
+  }
+}
+
+[*] Generating transcription using model: models/gemini-flash-lite-latest...
+[+] Transcription successful using models/gemini-flash-lite-latest! (7 chars)
+[*] Cleaning up uploaded media file from Gemini storage...
+[*] Cleanup complete.
+
+🟢 SUCCESS! Transcription returned. Length: 7 chars
+Transcription preview: <noise>

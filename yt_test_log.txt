@@ -1,0 +1,12 @@
+=== YT-DLP DIAGNOSTIC RUN ===
+Time: 2026-08-21 18:11:19
+Python: C:\Program Files\Python314\python.exe
+yt_dlp imported successfully.
+Testing URL: https://youtube.com/shorts/-_-_2_H2YSA?si=XPsaaceACIUWSTtG
+[*] Universal Link Integration: Analyzing online stream metadata...
+[*] Using yt_dlp to download audio stream directly...
+🟢 [AUDIO CHECK]: Ingestion stream verified. Size: 0.36 MB
+🟢 SUCCESS: handle_online_video_url returned a buffer!
+Buffer MIME type: audio/webm
+Buffer display name: stream.webm
+Buffer size: 0.36 MB

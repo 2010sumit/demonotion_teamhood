@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if (window.location.protocol === 'file:') {
+            window.location.href = 'http://127.0.0.1:5000' + window.location.hash;
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team KNIGHTHOOD - Live Event Annotator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glassmorphism {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 85, 99, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-violet-600 selection:text-white">
+
+    <!-- Header Section -->
+    <header class="relative overflow-hidden py-16 sm:py-24 border-b border-slate-900">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-violet-900/20 via-slate-950 to-slate-950 -z-10"></div>
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-800 text-sm text-violet-400 font-medium mb-6">
+                <i class="fa-solid fa-code-fork"></i>
+                <span>Hackathon Notion Track Submission</span>
+            </div>
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tight mb-6">
+                Live Event <span class="gradient-text">Annotator</span>
+            </h1>
+            <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                A standalone pipeline prototype designed to ingest live media, synthesize structured learning roadmaps using Gemini AI, and log annotations directly into Notion databases.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#search-engine" class="px-6 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-violet-900/30 transition duration-300">
+                    <i class="fa-solid fa-circle-play mr-2"></i> Get Started
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Engine Section -->
+    <section id="search-engine" class="max-w-4xl mx-auto px-4 py-16 scroll-mt-6">
+        <div class="glassmorphism p-8 sm:p-12 rounded-3xl border border-violet-500/20 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-violet-600/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-600/10 rounded-full blur-3xl"></div>
+            
+            <div class="text-center mb-8">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-3">Universal Ingestion Engine</h2>
+                <p class="text-slate-400 text-sm">Select an ingestion method to transcribe and log to Notion database.</p>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex justify-center space-x-4 mb-8 bg-slate-900/80 p-1.5 rounded-xl max-w-sm mx-auto border border-slate-800">
+                <button id="tabUrlBtn" onclick="switchTab('url')" class="flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 bg-violet-600 text-white">
+                    <i class="fa-solid fa-link mr-1.5"></i> Video URL
+                </button>
+                <button id="tabFileBtn" onclick="switchTab('file')" class="flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Local File
+                </button>
+            </div>
+
+            <!-- Ingestion Container -->
+            <div class="max-w-2xl mx-auto space-y-6">
+                <!-- Mode: URL -->
+                <div id="urlInputContainer" class="space-y-4">
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-slate-500">
+                            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                        </span>
+                        <input type="text" id="videoUrl" 
+                               placeholder="Paste YouTube Link or Video URL here..." 
+                               class="w-full pl-12 pr-4 py-4 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-slate-200 transition duration-300 font-medium placeholder-slate-500">
+                    </div>
+                    <p class="text-xs text-slate-400 pl-2">
+                        <span class="text-violet-400 font-bold">*</span> Note: Currently, only YouTube video links (including Shorts) are supported.
+                    </p>
+                </div>
+
+                <!-- Mode: File Upload -->
+                <div id="fileInputContainer" class="hidden space-y-4">
+                    <div id="dropZone" onclick="triggerFileSelect()" 
+                         class="border-2 border-dashed border-slate-700 hover:border-violet-500 bg-slate-900/50 hover:bg-slate-900/80 rounded-2xl p-8 text-center cursor-pointer transition duration-300 flex flex-col items-center justify-center space-y-3">
+                        <div class="text-slate-400 text-4xl group-hover:scale-110 transition duration-300">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-200" id="fileSelectText">Click to browse or drag and drop file here</p>
+                            <p class="text-xs text-slate-500 mt-1">Accepts audio and video formats (MP4, MP3, WAV, M4A, etc.)</p>
+                        </div>
+                        <input type="file" id="localFile" accept="video/*,audio/*" class="hidden" onchange="handleFileChange(event)">
+                    </div>
+
+                    <!-- Size warning alert -->
+                    <div class="bg-amber-950/20 border border-amber-500/30 rounded-xl p-4 flex items-start space-x-3">
+                        <span class="text-amber-500 text-sm mt-0.5"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong class="text-amber-400">File Size Limit:</strong> Maximum supported file size for direct upload is 4.5MB. For larger videos, please use the <strong class="text-slate-300">Video URL</strong> tab.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Action Button -->
+                <button id="searchBtn" onclick="startAnnotation()" 
+                        class="w-full py-4 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span id="buttonText">Process & Annotate to Notion</span>
+                </button>
+            </div>
+
+            <!-- Loading & Status Section -->
+            <div id="statusContainer" class="hidden mt-8 max-w-md mx-auto text-center space-y-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800">
+                <div class="flex justify-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
+                </div>
+                <p id="statusText" class="text-sm font-medium text-slate-300">Processing stream...</p>
+                <div class="text-xs text-slate-500 space-y-1">
+                    <p>• Extracting audio frequencies...</p>
+                    <p>• Generating AI transcription summary...</p>
+                    <p>• Syncing database entries...</p>
+                </div>
+            </div>
+
+            <!-- Result Success Section -->
+            <div id="resultContainer" class="hidden mt-8 max-w-3xl mx-auto text-left space-y-6 bg-slate-900/40 p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-emerald-400 text-3xl">
+                            <i class="fa-regular fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-200 font-sans">Annotation Processed Successfully!</h3>
+                            <p class="text-xs text-slate-400">Your structured roadmap and technical notes are displayed below.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Download PDF Button -->
+                    <button onclick="downloadPDF()" class="inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg text-sm transition duration-300 shadow-md transform hover:scale-[1.02] active:scale-[0.98]">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Download PDF</span>
+                    </button>
+                </div>
+                
+                <!-- Dynamic Sized Output Display Box -->
+                <div id="outputBox" class="bg-slate-950/80 p-6 sm:p-8 rounded-xl border border-slate-800 text-slate-300 font-sans shadow-inner leading-relaxed text-sm space-y-4">
+                    <!-- Dynamic Content Rendered Here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <main class="max-w-6xl mx-auto px-4 py-10">
+        <section class="mb-20">
+            <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12">Core Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Ingestion -->
+                <div class="glassmorphism p-8 rounded-2xl">
+                    <div class="w-12 h-12 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center text-xl mb-6 border border-blue-500/30">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Universal Ingestion</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Extracts high-quality audio streams and keyframe slides from YouTube URLs, social media links, or local video/audio files directly.
+                    </p>
+                </div>
+                <!-- AI Synthesis -->
+                <div class="glassmorphism p-8 rounded-2xl">
+                    <div class="w-12 h-12 bg-violet-600/20 text-violet-400 rounded-xl flex items-center justify-center text-xl mb-6 border border-violet-500/30">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Multimodal AI Synthesis</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Uses Google Gemini 1.5 Flash (via OpenRouter) to combine transcriptions and keyframes into clean, structured Markdown learning roadmaps.
+                    </p>
+                </div>
+                <!-- Notion Sync -->
+                <div class="glassmorphism p-8 rounded-2xl">
+                    <div class="w-12 h-12 bg-pink-600/20 text-pink-400 rounded-xl flex items-center justify-center text-xl mb-6 border border-pink-500/30">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Direct Notion Integration</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Parses synthesized Markdown output dynamically and pushes formatted tables, code fences, and logs straight to your Notion Database.
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- Collapsible Developer/User Guide -->
+        <section class="max-w-4xl mx-auto px-4 pb-16 mt-8">
+            <details class="glassmorphism rounded-xl border border-slate-800 transition duration-300">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-sm font-semibold text-slate-400 hover:text-slate-200 select-none">
+                    <span>⚙️ Developer Guide & Local Setup (for local execution)</span>
+                </summary>
+                <div class="p-6 border-t border-slate-900/80 space-y-6">
+                    <div class="bg-slate-950/80 border border-slate-900 rounded-xl overflow-hidden">
+                        <div class="bg-slate-900/40 px-4 py-3 border-b border-slate-900 flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 font-mono">1. Clone & Set Up Directory</span>
+                        </div>
+                        <div class="p-4 font-mono text-xs text-slate-400 overflow-x-auto">
+                            <p class="text-slate-600"># Clone the repository and install dependencies</p>
+                            <p>git clone &lt;your-repo-url&gt;</p>
+                            <p>cd &quot;demo p&quot;</p>
+                            <p>pip install -r requirements.txt</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/80 border border-slate-900 rounded-xl overflow-hidden">
+                        <div class="bg-slate-900/40 px-4 py-3 border-b border-slate-900 flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 font-mono">2. Setup Environment Variables (.env)</span>
+                        </div>
+                        <div class="p-4 font-mono text-xs text-slate-400 overflow-x-auto">
+                            <p class="text-slate-600"># Create a .env file and add your credentials</p>
+                            <p>GEMINI_API_KEY=your_gemini_key</p>
+                            <p>NOTION_TOKEN=your_notion_integration_token</p>
+                            <p>NOTION_DATABASE_ID=your_database_id</p>
+                            <p>OPENROUTER_API_KEY=your_openrouter_api_key</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/80 border border-slate-900 rounded-xl overflow-hidden">
+                        <div class="bg-slate-900/40 px-4 py-3 border-b border-slate-900 flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 font-mono">3. Start the Pipeline Applications</span>
+                        </div>
+                        <div class="p-4 font-mono text-xs text-slate-400 space-y-3 overflow-x-auto">
+                            <div>
+                                <p class="text-slate-600"># Run the desktop client with interactive UI</p>
+                                <p class="text-violet-400 font-semibold">Launch_KNIGHTHOOD_Engine.bat</p>
+                            </div>
+                            <hr class="border-slate-900">
+                            <div>
+                                <p class="text-slate-600"># Or run the mock pipeline looping listener</p>
+                                <p class="text-blue-400 font-semibold">python app.py --loop --interval 30</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-8 text-center text-slate-500 text-sm">
+        <p>&copy; 2026 Team KNIGHTHOOD. All rights reserved.</p>
+    </footer>
+
+    <!-- Interactive Script -->
+    <script>
+        let currentMode = 'url'; // 'url' or 'file'
+
+        function switchTab(mode) {
+            currentMode = mode;
+            const tabUrlBtn = document.getElementById('tabUrlBtn');
+            const tabFileBtn = document.getElementById('tabFileBtn');
+            const urlContainer = document.getElementById('urlInputContainer');
+            const fileContainer = document.getElementById('fileInputContainer');
+            const buttonText = document.getElementById('buttonText');
+
+            if (mode === 'url') {
+                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 bg-violet-600 text-white';
+                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 text-slate-400 hover:text-slate-200';
+                urlContainer.classList.remove('hidden');
+                fileContainer.classList.add('hidden');
+                buttonText.innerText = 'Process & Annotate to Notion';
+            } else {
+                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 bg-violet-600 text-white';
+                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 text-slate-400 hover:text-slate-200';
+                urlContainer.classList.add('hidden');
+                fileContainer.classList.remove('hidden');
+                buttonText.innerText = 'Upload & Annotate to Notion';
+            }
+            
+            // Reset results/status when switching tabs
+            document.getElementById('statusContainer').classList.add('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+        }
+
+        function triggerFileSelect() {
+            document.getElementById('localFile').click();
+        }
+
+        function handleFileChange(event) {
+            const file = event.target.files[0];
+            const fileText = document.getElementById('fileSelectText');
+            if (file) {
+                const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                fileText.innerHTML = `<span class="text-violet-400 font-bold">${file.name}</span> (${sizeInMB} MB)`;
+                
+                if (file.size > 4.5 * 1024 * 1024) {
+                    alert(`Warning: Selected file is ${sizeInMB}MB. The upload limit is 4.5MB. Please compress the file or use a YouTube URL.`);
+                }
+            } else {
+                fileText.innerText = 'Click to browse or drag and drop file here';
+            }
+        }
+
+        async function startAnnotation() {
+            // Check if opened as a local file (file://)
+            if (window.location.protocol === 'file:') {
+                alert('It looks like you opened the HTML file directly (file://).\n\nTo use the local server, please run "python api/index.py" in your terminal and open http://127.0.0.1:5000 in your browser.');
+                return;
+            }
+
+            const statusContainer = document.getElementById('statusContainer');
+            const statusText = document.getElementById('statusText');
+            const resultContainer = document.getElementById('resultContainer');
+            const notionLink = document.getElementById('notionLink');
+            const searchBtn = document.getElementById('searchBtn');
+            
+            let body = null;
+            let headers = {};
+
+            if (currentMode === 'url') {
+                const urlInput = document.getElementById('videoUrl').value.trim();
+                if (!urlInput) {
+                    alert('Please enter a valid video URL.');
+                    return;
+                }
+                body = JSON.stringify({ url: urlInput });
+                headers['Content-Type'] = 'application/json';
+            } else {
+                const fileInput = document.getElementById('localFile');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select a local video or audio file first.');
+                    return;
+                }
+                
+                const isLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                
+                // Limit check (only block if not running on local server)
+                if (!isLocalServer && file.size > 4.5 * 1024 * 1024) {
+                    alert('File size exceeds the 4.5MB upload limit. Please use the Video URL tab or upload a smaller file.');
+                    return;
+                }
+                
+                // Safety limit for local server (e.g. 500MB)
+                if (file.size > 500 * 1024 * 1024) {
+                    alert('File size exceeds the maximum supported limit of 500MB. Please use the Video URL tab for larger videos.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+                body = formData;
+                // Fetch will set Content-Type header to multipart/form-data with boundary automatically for FormData
+            }
+            
+            // Reset and show loading state
+            statusContainer.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            searchBtn.disabled = true;
+            searchBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            
+            statusText.innerText = currentMode === 'url' 
+                ? "Connecting to Notion and downloading video stream..." 
+                : "Uploading file and processing annotations...";
+            
+            try {
+                const response = await fetch('/api/annotate', {
+                    method: 'POST',
+                    headers: headers,
+                    body: body
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    statusContainer.classList.add('hidden');
+                    resultContainer.classList.remove('hidden');
+                    document.getElementById('outputBox').innerHTML = renderMarkdown(data.markdown);
+                } else {
+                    throw new Error(data.error || 'Failed to process request.');
+                }
+            } catch (error) {
+                statusContainer.classList.add('hidden');
+                alert('Error: ' + error.message);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        }
+
+        // Drag and drop zone setup
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                dropZone.classList.add('border-violet-500', 'bg-slate-900/80');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                dropZone.classList.remove('border-violet-500', 'bg-slate-900/80');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('localFile').files = files;
+            handleFileChange({ target: { files: files } });
+        }, false);
+
+        function renderMarkdown(md) {
+            let html = md;
+            
+            // Escape HTML tags to prevent XSS issues
+            html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            // Code blocks (```lang ... ```)
+            html = html.replace(/```(\w*)\n([\s\S]*?)\n```/g, function(match, lang, code) {
+                return `<pre class="bg-slate-950/80 p-4 rounded-lg my-4 overflow-x-auto text-xs font-mono border border-slate-800 text-violet-300"><code class="language-${lang}">${code}</code></pre>`;
+            });
+            
+            // Inline code (`code`)
+            html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-900 px-1.5 py-0.5 rounded text-pink-400 font-mono text-sm border border-slate-800">$1</code>');
+            
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h4 class="text-base font-bold mt-6 mb-2 text-slate-200 border-b border-slate-800 pb-1">$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h3 class="text-lg font-bold mt-8 mb-3 text-violet-400">$1</h3>');
+            html = html.replace(/^# (.*$)/gim, '<h2 class="text-xl font-black mt-10 mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400 border-b-2 border-slate-800 pb-2">$1</h2>');
+            
+            // Checkboxes (- [ ] or - [x])
+            html = html.replace(/^- \[ \]/gim, '<div class="flex items-center space-x-2 my-2"><input type="checkbox" disabled class="rounded border-slate-700 bg-slate-900 text-violet-600 focus:ring-violet-500 h-4 w-4"><span>');
+            html = html.replace(/^- \[x\]/gim, '<div class="flex items-center space-x-2 my-2"><input type="checkbox" checked disabled class="rounded border-slate-700 bg-slate-900 text-violet-600 focus:ring-violet-500 h-4 w-4"><span class="line-through text-slate-500">');
+            
+            // Lists
+            html = html.replace(/^- (.*$)/gim, '<li class="list-disc list-inside pl-2 my-1.5 text-slate-300">$1</li>');
+            
+            // Callouts / Alert block (💡 or > 💡)
+            html = html.replace(/^> \*(.*?)\*(.*$)/gim, '<blockquote class="border-l-4 border-violet-500 bg-violet-950/20 px-4 py-3 rounded-r-lg my-4 text-slate-300 italic font-medium">$1$2</blockquote>');
+            
+            // Paragraph split
+            let paragraphs = html.split('\n\n');
+            html = paragraphs.map(p => {
+                const trimmed = p.trim();
+                if (trimmed.startsWith('<h') || trimmed.startsWith('<pre') || trimmed.startsWith('<li') || trimmed.startsWith('<div') || trimmed.startsWith('<blockquote')) {
+                    return trimmed;
+                }
+                return trimmed ? `<p class="my-4 text-slate-300 leading-relaxed text-sm">${trimmed}</p>` : '';
+            }).join('\n');
+            
+            return html;
+        }
+
+        function downloadPDF() {
+            const outputElement = document.getElementById('outputBox');
+            
+            // Create a temporary element for printing with light background
+            const printElement = document.createElement('div');
+            printElement.className = 'bg-white text-slate-900 p-8 font-sans';
+            printElement.style.width = '800px';
+            printElement.innerHTML = `
+                <div style="border-bottom: 2px solid #6366f1; padding-bottom: 12px; margin-bottom: 24px;">
+                    <h1 style="font-size: 24px; font-weight: 800; color: #4f46e5; margin: 0;">Live Event Annotation</h1>
+                    <p style="font-size: 11px; color: #6b7280; margin: 4px 0 0 0;">Generated by Team KNIGHTHOOD Scribe Engine</p>
+                </div>
+                <div style="font-size: 14px; line-height: 1.6;">
+                    ${outputElement.innerHTML}
+                </div>
+            `;
+            
+            // Format links and pre tags for white background printing
+            const codeBlocks = printElement.querySelectorAll('pre');
+            codeBlocks.forEach(block => {
+                block.style.backgroundColor = '#f1f5f9';
+                block.style.color = '#0f172a';
+                block.style.border = '1px solid #cbd5e1';
+                block.style.whiteSpace = 'pre-wrap';
+            });
+            
+            const inlineCodes = printElement.querySelectorAll('code:not(pre code)');
+            inlineCodes.forEach(code => {
+                code.style.backgroundColor = '#f1f5f9';
+                code.style.color = '#db2777';
+                code.style.border = '1px solid #cbd5e1';
+            });
+
+            const opt = {
+                margin:       0.5,
+                filename:     'Live_Event_Annotation.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            html2pdf().from(printElement).set(opt).save();
+        }
+    </script>
+</body>
+</html>
