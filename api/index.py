@@ -18,7 +18,7 @@ def home():
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return send_from_directory(root_dir, 'index.html')
 
-@app.route('/api/annotate', methods=['POST'])
+@app.route('/api/index', methods=['POST'])
 def annotate():
     temp_filepath = None
     url = ""
