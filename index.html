@@ -449,7 +449,17 @@
                     body: body
                 });
                 
-                const data = await response.json();
+                const responseText = await response.text();
+                let data;
+
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch (parseError) {
+                    const serverMessage = responseText.trim().replace(/<[^>]*>/g, '').slice(0, 500);
+                    throw new Error(
+                        serverMessage || `Server returned HTTP ${response.status} without a readable error.`
+                    );
+                }
                 
                 if (response.ok && data.success) {
                     statusContainer.classList.add('hidden');

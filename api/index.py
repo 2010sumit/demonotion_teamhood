@@ -4,15 +4,23 @@ import sys
 import io
 import tempfile
 
+import traceback
+
 # Add project root to python path to import local modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import config
-from local_video_processor import (
-    handle_online_video_url, transcribe_media, extract_keyframes, 
-    analyze_transcription, log_to_notion, extract_youtube_video_id, get_youtube_transcript,
-    FALLBACK_MARKDOWN
-)
+import_error = None
+try:
+    import config
+    from local_video_processor import (
+        handle_online_video_url, transcribe_media, extract_keyframes, 
+        analyze_transcription, log_to_notion, extract_youtube_video_id, get_youtube_transcript,
+        FALLBACK_MARKDOWN
+    )
+except Exception as e:
+    import_error = traceback.format_exc()
+    config = None
+    FALLBACK_MARKDOWN = "Import failed fallback"
 
 app = Flask(__name__)
 
@@ -28,6 +36,12 @@ def annotate():
     url = ""
     
     try:
+        if import_error:
+            return jsonify({
+                'error': 'Server startup failed while importing the processing modules.',
+                'details': import_error.splitlines()[-1] if import_error else ''
+            }), 500
+
         # Load keys from config
         openrouter_key = config.OPENROUTER_API_KEY
         gemini_key = config.GEMINI_API_KEY
@@ -199,6 +213,13 @@ def annotate():
 def config_status():
     """Securely returns status of configured APIs without exposing keys."""
     try:
+        if import_error:
+            return jsonify({
+                'success': False,
+                'error': 'Server startup failed while importing the processing modules.',
+                'details': import_error.splitlines()[-1] if import_error else ''
+            }), 500
+
         openrouter_key = config.OPENROUTER_API_KEY
         gemini_key = config.GEMINI_API_KEY
         groq_key = config.GROQ_API_KEY
