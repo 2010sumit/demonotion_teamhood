@@ -48,7 +48,7 @@ if __name__ == "__main__":
 import requests
 try:
     import cv2
-except ImportError as e:
+except BaseException as e:
     print(f"[!] Warning: OpenCV (cv2) could not be loaded. Video keyframe extraction will be bypassed. Error: {e}")
     cv2 = None
 
