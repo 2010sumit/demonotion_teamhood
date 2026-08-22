@@ -22,11 +22,12 @@ import webbrowser
 import io
 import config
 
-# Auto-dependency setup for 'requests', 'opencv-python' and 'yt-dlp'
+# Auto-dependency setup for 'requests', 'opencv-python', 'yt-dlp', and 'youtube-transcript-api'
 required_libs = {
     "requests": "requests",
     "cv2": "opencv-python",
-    "yt_dlp": "yt-dlp"
+    "yt_dlp": "yt-dlp",
+    "youtube_transcript_api": "youtube-transcript-api"
 }
 
 is_vercel = os.environ.get('VERCEL') == '1'
@@ -276,6 +277,8 @@ def extract_and_compress_audio(file_path, log_func=print):
 
 def extract_keyframes(video_path, num_frames=3, log_func=print):
     """Extracts evenly spaced keyframes from the video file and encodes them to base64."""
+    # Set OpenCV FFMPEG timeout to 10 seconds for network streaming
+    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
     log_func("[*] Opening video file to extract keyframes...")
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -636,10 +639,10 @@ def analyze_transcription_gemini(transcription, base64_frames, gemini_key, log_f
     """Submits transcription string and keyframes to Gemini API."""
     models = get_sorted_gemini_flash_models(gemini_key, log_func=log_func)
     markdown = None
-    last_err = None
-    
-    system_instruction = (
+     system_instruction = (
         "You must act as a Universal Multimodal Technical Scribe. "
+        "Analyze BOTH the Audio track (speech-to-text transcript, tone, spoken technical keywords) and Video track (keyframe slides, visual code blocks, diagrams, UI shifts) of the processed media. "
+        "Combine what is SAID (audio) with what is SHOWN (video keyframe images) to synthesize a highly detailed, error-free technical markdown documentation and action-item roadmap. "
         "Detect the exact programming language or technology being discussed in the video transcript and screenshots. "
         "You must generate detailed documentation, technical notes, and code blocks in that SPECIFIC language only. "
         "Do not translate the concepts into C++ unless the video is explicitly about C++. "
@@ -709,7 +712,7 @@ def analyze_transcription_gemini(transcription, base64_frames, gemini_key, log_f
         raise last_err or Exception("All Gemini models failed to generate multimodal analysis.")
         
     return markdown
-
+ 
 def analyze_transcription_openrouter(transcription, base64_frames, openrouter_key, log_func=print):
     """Submits transcription string and keyframes to OpenRouter completions API, with retry support."""
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -720,6 +723,8 @@ def analyze_transcription_openrouter(transcription, base64_frames, openrouter_ke
         
     system_instruction = (
         "You must act as a Universal Multimodal Technical Scribe. "
+        "Analyze BOTH the Audio track (speech-to-text transcript, tone, spoken technical keywords) and Video track (keyframe slides, visual code blocks, diagrams, UI shifts) of the processed media. "
+        "Combine what is SAID (audio) with what is SHOWN (video keyframe images) to synthesize a highly detailed, error-free technical markdown documentation and action-item roadmap. "
         "Detect the exact programming language or technology being discussed in the video transcript and screenshots. "
         "You must generate detailed documentation, technical notes, and code blocks in that SPECIFIC language only. "
         "Do not translate the concepts into C++ unless the video is explicitly about C++. "
@@ -730,7 +735,6 @@ def analyze_transcription_openrouter(transcription, base64_frames, openrouter_ke
         "Use interactive checkboxes (e.g., - [ ] Task name) for actionable roadmap items. "
         "Do not use LaTeX math formatting, dollar signs ($ or $$), or LaTeX symbols (like \\Delta, \\times, etc.) anywhere in the output. "
         "Write all equations, formulas, variables, and math symbols in plain text or format them using standard markdown or backticks (e.g., use C or R, or Delta * R, not $C$ or $R$). "
-        "Avoid generic study plans; output immediate content breakdown notes and structured action-item roadmaps."
     )
     
     messages = [
@@ -1121,6 +1125,38 @@ def create_dummy_jpeg(path):
             f.write(jpeg_bytes)
     except Exception:
         pass
+
+def extract_youtube_video_id(url):
+    import re
+    if not url:
+        return None
+    patterns = [
+        r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})',
+        r'(?:https?:\/\/)?(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11})',
+        r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})',
+        r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})',
+        r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([a-zA-Z0-9_-]{11})',
+        r'([a-zA-Z0-9_-]{11})'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            vid = match.group(1)
+            if len(vid) == 11:
+                return vid
+    return None
+
+def get_youtube_transcript(video_id, log_func=print):
+    try:
+        from youtube_transcript_api import YouTubeTranscriptApi
+        log_func(f"[*] Attempting to fetch official transcript for YouTube video ID: {video_id}...")
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_text = " ".join([item["text"] for item in transcript_list])
+        log_func(f"🟢 [TRANSCRIPT FETCH]: Successfully retrieved transcript from official YouTube API! ({len(transcript_text)} characters)")
+        return transcript_text
+    except Exception as e:
+        log_func(f"[!] Official YouTube Transcript API failed (ID: {video_id}): {e}")
+        return None
 
 def handle_online_video_url(url, log_func=print):
     """

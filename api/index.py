@@ -8,7 +8,10 @@ import tempfile
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config
-from local_video_processor import handle_online_video_url, transcribe_media, extract_keyframes, analyze_transcription, log_to_notion
+from local_video_processor import (
+    handle_online_video_url, transcribe_media, extract_keyframes, 
+    analyze_transcription, log_to_notion, extract_youtube_video_id, get_youtube_transcript
+)
 
 app = Flask(__name__)
 
@@ -75,13 +78,20 @@ def annotate():
         if not temp_filepath and not url:
             return jsonify({'error': 'Please provide a valid video URL or upload a file.'}), 400
 
-        # Step 1: If URL is used, download audio buffer and extract keyframes
+        # Step 1: If URL is used, try to fetch transcription and extract keyframes
         audio_payload = None
+        transcription = ""
+        
         if not temp_filepath:
-            try:
-                audio_payload = handle_online_video_url(url)
-            except Exception as e:
-                print(f"Ingestion warning for URL: {e}")
+            video_id = extract_youtube_video_id(url)
+            if video_id:
+                transcription = get_youtube_transcript(video_id)
+                
+            if not transcription:
+                try:
+                    audio_payload = handle_online_video_url(url)
+                except Exception as e:
+                    print(f"Ingestion warning for URL: {e}")
                 
             try:
                 # Query raw stream URL using yt_dlp first so OpenCV can read the stream
@@ -93,6 +103,10 @@ def annotate():
                     'no_warnings': True,
                     'nocheckcertificate': True,
                 }
+                
+                # Set OpenCV stream capture timeout to 10 seconds to avoid hanging on slow streams
+                os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
+                
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
                     video_stream_url = info.get('url')
@@ -111,13 +125,13 @@ def annotate():
         else:
             audio_payload = temp_filepath
 
-        # Step 2: Transcribe
-        transcription = ""
-        try:
-            if audio_payload:
-                transcription = transcribe_media(audio_payload, openrouter_key, gemini_key, groq_key)
-        except Exception as e:
-            print(f"Transcription warning: {e}")
+        # Step 2: Transcribe (if not already fetched via YouTube API)
+        if not transcription:
+            try:
+                if audio_payload:
+                    transcription = transcribe_media(audio_payload, openrouter_key, gemini_key, groq_key)
+            except Exception as e:
+                print(f"Transcription warning: {e}")
             
         # Treat noise or empty transcription gracefully
         if not transcription or transcription.strip().lower() in ['<noise>', 'noise', '[noise]']:
