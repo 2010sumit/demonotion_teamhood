@@ -280,8 +280,9 @@ def extract_and_compress_audio(file_path, log_func=print):
 
 def extract_keyframes(video_path, num_frames=3, log_func=print):
     """Extracts evenly spaced keyframes from the video file and encodes them to base64."""
-    if cv2 is None:
-        log_func("[!] OpenCV is not available in this environment. Bypassing keyframe extraction.")
+    is_vercel = os.environ.get('VERCEL') == '1'
+    if is_vercel or cv2 is None:
+        log_func("[!] Running on Vercel or OpenCV is not available. Bypassing keyframe extraction.")
         return []
     # Set OpenCV FFMPEG timeout to 10 seconds for network streaming
     os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"

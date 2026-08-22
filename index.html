@@ -345,14 +345,14 @@
             const buttonText = document.getElementById('buttonText');
 
             if (mode === 'url') {
-                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 bg-gradient-to-b from-violet-600/20 to-indigo-600/30 border border-violet-500/30 text-white shadow-inner';
-                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent';
+                tabUrlBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]';
+                tabFileBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200';
                 urlContainer.classList.remove('hidden');
                 fileContainer.classList.add('hidden');
                 buttonText.innerText = 'Process & Annotate to Notion';
             } else {
-                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 bg-gradient-to-b from-violet-600/20 to-indigo-600/30 border border-violet-500/30 text-white shadow-inner';
-                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent';
+                tabFileBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]';
+                tabUrlBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200';
                 urlContainer.classList.add('hidden');
                 fileContainer.classList.remove('hidden');
                 buttonText.innerText = 'Upload & Annotate to Notion';
@@ -643,19 +643,20 @@
             const ptWidth = 800 * 0.75;
             const ptHeight = printElement.scrollHeight * 0.75;
             
-            let pdfFormat = 'a4';
+            // Define margins in points (36pt = 0.5 inches)
+            const marginPt = 36;
             
-            // If content height is short/reasonable, fit it onto a single page to prevent clipping
-            if (printElement.scrollHeight < 1600) {
-                pdfFormat = [ptWidth + 40, ptHeight + 50]; 
-            }
+            // Set the PDF page format to match the exact height of the content plus margins.
+            // This guarantees the entire content fits onto a single continuous page
+            // and completely prevents any vertical splits, orphan headers, or card cut-offs!
+            const pdfFormat = [ptWidth + (marginPt * 2), ptHeight + (marginPt * 2)];
 
             const opt = {
-                margin:       0.5,
+                margin:       marginPt,
                 filename:     'Live_Event_Annotation.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#030914', scrollY: 0, scrollX: 0 },
-                jsPDF:        { unit: 'in', format: pdfFormat, orientation: 'portrait' },
+                jsPDF:        { unit: 'pt', format: pdfFormat, orientation: 'portrait' },
                 pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
             };
             

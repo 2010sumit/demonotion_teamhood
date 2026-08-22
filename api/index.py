@@ -38,6 +38,17 @@ def annotate():
         # Check if keys are set (gracefully handle placeholder mode for offline/preview demo)
         is_mock_mode = (not notion_token or "placeholder" in notion_token or not db_id or "placeholder" in db_id)
 
+        if is_mock_mode:
+            db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
+            print("[*] Notion sync skipped (offline/mock mode active)")
+            return jsonify({
+                'success': True,
+                'notion_url': db_entry_url,
+                'markdown': FALLBACK_MARKDOWN,
+                'is_mock_mode': True,
+                'message': 'Processed in Sandbox Mode (Notion Sync Skipped due to placeholder credentials)!'
+            })
+
         # Base64 frames accumulator for vision model analysis
         base64_frames = []
 
