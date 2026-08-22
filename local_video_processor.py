@@ -326,7 +326,7 @@ def get_sorted_gemini_flash_models(gemini_key, log_func=print):
     """Queries the Gemini API and returns sorted list of available flash models (newest first)."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models?key={gemini_key}"
     try:
-        response = requests.get(url, timeout=60)
+        response = requests.get(url, timeout=10 if os.environ.get('VERCEL') == '1' else 60)
         if response.status_code == 200:
             models = response.json().get("models", [])
             flash_models = []
@@ -340,12 +340,12 @@ def get_sorted_gemini_flash_models(gemini_key, log_func=print):
             # Sort descending to get newer models first (e.g. gemini-3.6-flash before gemini-2.5-flash)
             flash_models.sort(reverse=True)
             if flash_models:
-                return flash_models
+                return flash_models[:1] if os.environ.get('VERCEL') == '1' else flash_models
     except Exception as e:
         log_func(f"[!] Warning: Failed to query available Gemini models: {e}")
         
     # Default fallbacks
-    return ["models/gemini-3.6-flash", "models/gemini-1.5-flash"]
+    return ["models/gemini-3.6-flash"] if os.environ.get('VERCEL') == '1' else ["models/gemini-3.6-flash", "models/gemini-1.5-flash"]
 
 def transcribe_media_gemini(file_payload, gemini_key, log_func=print):
     """Uploads the media content to Gemini Files API and transcribes it using Gemini."""
@@ -701,7 +701,7 @@ def analyze_transcription_gemini(transcription, base64_frames, gemini_key, log_f
         url = f"https://generativelanguage.googleapis.com/v1beta/{model_path}:generateContent?key={gemini_key}"
         
         start_time = time.time()
-        response = requests.post(url, headers=headers, json=payload, timeout=60)
+        response = requests.post(url, headers=headers, json=payload, timeout=25 if os.environ.get('VERCEL') == '1' else 60)
         duration = time.time() - start_time
         
         if response.status_code == 200:
@@ -1001,19 +1001,23 @@ def notion_api_request_with_retry(method, url, headers, json_payload=None, max_r
     Sends an API request to Notion, with an automatic backoff and retry mechanism for 429 (rate limit) or 5xx errors.
     Enforces a strict sleep interval of 0.35s to prevent hitting the Notion API limits.
     """
+    if os.environ.get('VERCEL') == '1':
+        max_retries = min(max_retries, 1)
+        backoff_factor = 0.2
+
     for retry in range(max_retries):
         try:
             # Proactively sleep 0.35s before the call to protect against rate limits
-            time.sleep(0.35)
+            time.sleep(0.1 if os.environ.get('VERCEL') == '1' else 0.35)
             
             if method.upper() == "POST":
-                res = requests.post(url, json=json_payload, headers=headers, timeout=60)
+                res = requests.post(url, json=json_payload, headers=headers, timeout=15 if os.environ.get('VERCEL') == '1' else 60)
             elif method.upper() == "PATCH":
-                res = requests.patch(url, json=json_payload, headers=headers, timeout=60)
+                res = requests.patch(url, json=json_payload, headers=headers, timeout=15 if os.environ.get('VERCEL') == '1' else 60)
             elif method.upper() == "GET":
-                res = requests.get(url, headers=headers, timeout=60)
+                res = requests.get(url, headers=headers, timeout=15 if os.environ.get('VERCEL') == '1' else 60)
             else:
-                res = requests.request(method, url, json=json_payload, headers=headers, timeout=60)
+                res = requests.request(method, url, json=json_payload, headers=headers, timeout=15 if os.environ.get('VERCEL') == '1' else 60)
                 
             if res.status_code == 429:
                 retry_after = res.headers.get("Retry-After")

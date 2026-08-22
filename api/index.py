@@ -121,41 +121,38 @@ def annotate():
             if video_id:
                 transcription = get_youtube_transcript(video_id)
                 
-            if not transcription:
+            if not transcription and os.environ.get('VERCEL') != '1':
                 try:
                     audio_payload = handle_online_video_url(url)
                 except Exception as e:
                     print(f"Ingestion warning for URL: {e}")
+            elif not transcription:
+                print("[!] Transcript unavailable on Vercel; continuing with text-only fallback.")
                 
-            try:
-                # Query raw stream URL using yt_dlp first so OpenCV can read the stream
-                import yt_dlp
-                video_stream_url = None
-                ydl_opts = {
-                    'format': 'worstvideo[protocol^=http]/worst[protocol^=http]',
-                    'quiet': True,
-                    'no_warnings': True,
-                    'nocheckcertificate': True,
-                }
-                
-                # Set OpenCV stream capture timeout to 10 seconds to avoid hanging on slow streams
-                os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
-                
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    video_stream_url = info.get('url')
-                
-                if video_stream_url:
-                    base64_frames = extract_keyframes(video_stream_url, num_frames=3)
-                else:
-                    base64_frames = extract_keyframes(url, num_frames=3)
-            except Exception as e:
-                print(f"Keyframe extraction warning for URL: {e}")
-                # Fallback directly if yt_dlp fails
+            # Vercel's read-only/serverless runtime cannot reliably process video streams.
+            # Skip the extra yt-dlp/OpenCV network work there and use transcript-only AI input.
+            if os.environ.get('VERCEL') != '1':
                 try:
-                    base64_frames = extract_keyframes(url, num_frames=3)
-                except Exception:
-                    pass
+                    import yt_dlp
+                    video_stream_url = None
+                    ydl_opts = {
+                        'format': 'worstvideo[protocol^=http]/worst[protocol^=http]',
+                        'quiet': True,
+                        'no_warnings': True,
+                        'nocheckcertificate': True,
+                    }
+                    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
+
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=False)
+                        video_stream_url = info.get('url')
+
+                    base64_frames = extract_keyframes(
+                        video_stream_url or url,
+                        num_frames=3
+                    )
+                except Exception as e:
+                    print(f"Keyframe extraction warning for URL: {e}")
         else:
             audio_payload = temp_filepath
 
