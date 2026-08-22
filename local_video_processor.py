@@ -47,7 +47,11 @@ if not is_vercel:
                 sys.exit(1)
 
 import requests
-import cv2
+try:
+    import cv2
+except ImportError as e:
+    print(f"[!] Warning: OpenCV (cv2) could not be loaded. Video keyframe extraction will be bypassed. Error: {e}")
+    cv2 = None
 
 # Global persistent connection session for accelerated execution
 http_session = requests.Session()
@@ -277,6 +281,9 @@ def extract_and_compress_audio(file_path, log_func=print):
 
 def extract_keyframes(video_path, num_frames=3, log_func=print):
     """Extracts evenly spaced keyframes from the video file and encodes them to base64."""
+    if cv2 is None:
+        log_func("[!] OpenCV is not available in this environment. Bypassing keyframe extraction.")
+        return []
     # Set OpenCV FFMPEG timeout to 10 seconds for network streaming
     os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
     log_func("[*] Opening video file to extract keyframes...")
