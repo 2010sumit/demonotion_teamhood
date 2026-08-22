@@ -207,7 +207,13 @@ def annotate():
             'notion_url': db_entry_url,
             'markdown': markdown,
             'is_mock_mode': is_mock_mode,
-            'message': 'Annotation successfully processed!' if not is_mock_mode else 'Processed in Sandbox Mode (Notion Sync Skipped)!'
+            'message': (
+                'Annotation successfully processed and synced to Notion!'
+                if not is_mock_mode and db_entry_url
+                else 'Annotation processed in fallback mode; Notion sync was skipped.'
+                if is_mock_mode
+                else 'Annotation processed, but Notion sync failed.'
+            )
         })
         
     except Exception as e:
