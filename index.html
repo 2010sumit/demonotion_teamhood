@@ -160,6 +160,7 @@
                         <div>
                             <h3 class="text-lg font-bold text-slate-200 font-sans">Annotation Processed Successfully!</h3>
                             <p class="text-xs text-slate-400">Your structured roadmap and technical notes are displayed below.</p>
+                            <p id="analysisStatus" class="text-xs text-emerald-400 mt-1"></p>
                             <a id="notionLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden mt-2 inline-flex items-center gap-2 text-xs font-semibold text-[#FFD700] hover:text-white">
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                 <span>Open Notion Page</span>
@@ -469,6 +470,13 @@
                     statusContainer.classList.add('hidden');
                     resultContainer.classList.remove('hidden');
                     document.getElementById('outputBox').innerHTML = renderMarkdown(data.markdown);
+                    const analysisStatus = document.getElementById('analysisStatus');
+                    const audioStatus = data.audio_analyzed ? 'Audio analyzed' : 'Audio transcript unavailable';
+                    const videoStatus = data.video_analyzed ? 'Video frames analyzed' : 'Video frames unavailable';
+                    analysisStatus.textContent = `${audioStatus} | ${videoStatus}`;
+                    analysisStatus.className = data.audio_analyzed && data.video_analyzed
+                        ? 'text-xs text-emerald-400 mt-1'
+                        : 'text-xs text-amber-400 mt-1';
                     if (!data.is_mock_mode && data.notion_url && data.notion_url.startsWith('http')) {
                         notionLink.href = data.notion_url;
                         notionLink.classList.remove('hidden');

@@ -34,6 +34,7 @@ def home():
 def annotate():
     temp_filepath = None
     url = ""
+    media_is_video = True
     
     try:
         if import_error:
@@ -97,11 +98,12 @@ def annotate():
                     temp_file.write(file_bytes)
                 
                 url = f"Uploaded Local File: {file.filename}"
+                media_is_video = file.mimetype.startswith('video/') if file.mimetype else ext.lower() not in {'.mp3', '.wav', '.m4a', '.ogg'}
                 
                 # Extract keyframes from local temporary file
                 try:
-                    # Extract up to 3 frames to give Gemini rich visual context
-                    base64_frames = extract_keyframes(temp_filepath, num_frames=3)
+                    # Keep the payload small enough for a serverless request while retaining visual context.
+                    base64_frames = extract_keyframes(temp_filepath, num_frames=2)
                 except Exception as e:
                     print(f"Keyframe extraction warning for upload: {e}")
         else:
@@ -121,38 +123,33 @@ def annotate():
             if video_id:
                 transcription = get_youtube_transcript(video_id)
                 
-            if not transcription and os.environ.get('VERCEL') != '1':
+            if not transcription:
                 try:
                     audio_payload = handle_online_video_url(url)
                 except Exception as e:
                     print(f"Ingestion warning for URL: {e}")
-            elif not transcription:
-                print("[!] Transcript unavailable on Vercel; continuing with text-only fallback.")
                 
-            # Vercel's read-only/serverless runtime cannot reliably process video streams.
-            # Skip the extra yt-dlp/OpenCV network work there and use transcript-only AI input.
-            if os.environ.get('VERCEL') != '1':
-                try:
-                    import yt_dlp
-                    video_stream_url = None
-                    ydl_opts = {
-                        'format': 'worstvideo[protocol^=http]/worst[protocol^=http]',
-                        'quiet': True,
-                        'no_warnings': True,
-                        'nocheckcertificate': True,
-                    }
-                    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
+            try:
+                import yt_dlp
+                video_stream_url = None
+                ydl_opts = {
+                    'format': 'worstvideo[protocol^=http]/worst[protocol^=http]',
+                    'quiet': True,
+                    'no_warnings': True,
+                    'nocheckcertificate': True,
+                }
+                os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
 
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(url, download=False)
-                        video_stream_url = info.get('url')
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    video_stream_url = info.get('url')
 
-                    base64_frames = extract_keyframes(
-                        video_stream_url or url,
-                        num_frames=3
-                    )
-                except Exception as e:
-                    print(f"Keyframe extraction warning for URL: {e}")
+                base64_frames = extract_keyframes(
+                    video_stream_url or url,
+                    num_frames=2
+                )
+            except Exception as e:
+                print(f"Keyframe extraction warning for URL: {e}")
         else:
             audio_payload = temp_filepath
 
@@ -167,6 +164,9 @@ def annotate():
         # Treat noise or empty transcription gracefully
         if not transcription or transcription.strip().lower() in ['<noise>', 'noise', '[noise]']:
             transcription = "<noise_or_silent_video>"
+
+        audio_analyzed = transcription != "<noise_or_silent_video>"
+        video_analyzed = bool(base64_frames) if media_is_video else False
 
         # Step 3: Multimodal Analysis via Gemini
         markdown = ""
@@ -203,6 +203,8 @@ def annotate():
             'success': True,
             'notion_url': db_entry_url,
             'markdown': markdown,
+            'audio_analyzed': audio_analyzed,
+            'video_analyzed': video_analyzed,
             'is_mock_mode': is_mock_mode,
             'message': (
                 'Annotation successfully processed and synced to Notion!'
