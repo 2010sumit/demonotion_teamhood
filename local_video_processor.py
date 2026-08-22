@@ -1160,8 +1160,12 @@ def get_youtube_transcript(video_id, log_func=print):
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
         log_func(f"[*] Attempting to fetch official transcript for YouTube video ID: {video_id}...")
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-        transcript_text = " ".join([item["text"] for item in transcript_list])
+        transcript_api = YouTubeTranscriptApi()
+        transcript = transcript_api.fetch(video_id, languages=('en', 'hi'))
+        transcript_text = " ".join(
+            item.text if hasattr(item, "text") else item["text"]
+            for item in transcript
+        )
         log_func(f"🟢 [TRANSCRIPT FETCH]: Successfully retrieved transcript from official YouTube API! ({len(transcript_text)} characters)")
         return transcript_text
     except Exception as e:
