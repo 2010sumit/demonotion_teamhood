@@ -645,7 +645,7 @@ def analyze_transcription_gemini(transcription, base64_frames, gemini_key, log_f
     """Submits transcription string and keyframes to Gemini API."""
     models = get_sorted_gemini_flash_models(gemini_key, log_func=log_func)
     markdown = None
-     system_instruction = (
+    system_instruction = (
         "You must act as a Universal Multimodal Technical Scribe. "
         "Analyze BOTH the Audio track (speech-to-text transcript, tone, spoken technical keywords) and Video track (keyframe slides, visual code blocks, diagrams, UI shifts) of the processed media. "
         "Combine what is SAID (audio) with what is SHOWN (video keyframe images) to synthesize a highly detailed, error-free technical markdown documentation and action-item roadmap. "

@@ -10,7 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
 from local_video_processor import (
     handle_online_video_url, transcribe_media, extract_keyframes, 
-    analyze_transcription, log_to_notion, extract_youtube_video_id, get_youtube_transcript
+    analyze_transcription, log_to_notion, extract_youtube_video_id, get_youtube_transcript,
+    FALLBACK_MARKDOWN
 )
 
 app = Flask(__name__)
@@ -155,7 +156,6 @@ def annotate():
             print(f"Analysis warning: {e}")
             
         if not markdown:
-            from app import FALLBACK_MARKDOWN
             markdown = FALLBACK_MARKDOWN
 
         # Step 4: Pushing to Notion (Skip or Mock if credentials are not provided)
