@@ -5,7 +5,7 @@ import io
 import tempfile
 
 # Add project root to python path to import local modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config
 from local_video_processor import (

@@ -30,8 +30,7 @@ required_libs = {
     "youtube_transcript_api": "youtube-transcript-api"
 }
 
-is_vercel = os.environ.get('VERCEL') == '1'
-if not is_vercel:
+if __name__ == "__main__":
     for lib_name, pip_name in required_libs.items():
         try:
             __import__(lib_name)
@@ -78,7 +77,7 @@ try:
     import tkinter as tk
     from tkinter import filedialog, messagebox
     from tkinter import ttk
-except ImportError:
+except BaseException:
     tk = None
     filedialog = None
     messagebox = None
