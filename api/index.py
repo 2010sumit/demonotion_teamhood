@@ -49,8 +49,16 @@ def annotate():
         notion_token = config.NOTION_TOKEN
         db_id = config.NOTION_DATABASE_ID
         
-        # Check if keys are set (gracefully handle placeholder mode for offline/preview demo)
-        is_mock_mode = (not notion_token or "placeholder" in notion_token or not db_id or "placeholder" in db_id)
+        # Avoid spending the serverless request budget when AI credentials are absent.
+        has_ai_key = any([
+            openrouter_key and not openrouter_key.startswith("your_"),
+            gemini_key and not gemini_key.startswith("your_"),
+            groq_key and not groq_key.startswith("your_")
+        ])
+        is_mock_mode = (
+            not notion_token or "placeholder" in notion_token or
+            not db_id or "placeholder" in db_id or not has_ai_key
+        )
 
         if is_mock_mode:
             db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
@@ -60,7 +68,7 @@ def annotate():
                 'notion_url': db_entry_url,
                 'markdown': FALLBACK_MARKDOWN,
                 'is_mock_mode': True,
-                'message': 'Processed in Sandbox Mode (Notion Sync Skipped due to placeholder credentials)!'
+                'message': 'Processed in Sandbox Mode (configure Vercel environment variables for live processing)!'
             })
 
         # Base64 frames accumulator for vision model analysis
@@ -188,14 +196,18 @@ def annotate():
             db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
             print("[*] Notion sync skipped (offline/mock mode active)")
         else:
-            db_entry_url = log_to_notion(notion_token, db_id, url, transcription, markdown)
+            try:
+                db_entry_url = log_to_notion(notion_token, db_id, url, transcription, markdown)
+            except Exception as notion_error:
+                print(f"Notion sync warning: {notion_error}")
+                db_entry_url = ""
         
         return jsonify({
             'success': True,
             'notion_url': db_entry_url,
             'markdown': markdown,
             'is_mock_mode': is_mock_mode,
-            'message': 'Annotation successfully processed!' if not is_mock_mode else 'Processed in Sandbox Mode (Notion Sync Skipped due to placeholder credentials)!'
+            'message': 'Annotation successfully processed!' if not is_mock_mode else 'Processed in Sandbox Mode (Notion Sync Skipped)!'
         })
         
     except Exception as e:
