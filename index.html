@@ -144,11 +144,20 @@
                         </div>
                     </div>
                     
-                    <!-- Download PDF Button -->
-                    <button onclick="downloadPDF()" class="inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg text-sm transition duration-300 shadow-md transform hover:scale-[1.02] active:scale-[0.98]">
-                        <i class="fa-solid fa-file-pdf"></i>
-                        <span>Download PDF</span>
-                    </button>
+                    <!-- Action Buttons -->
+                    <div class="flex items-center space-x-3 shrink-0">
+                        <!-- Full Screen Button -->
+                        <button onclick="toggleFullscreen()" class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold rounded-lg text-sm transition duration-300 shadow-md">
+                            <i id="fullscreenIcon" class="fa-solid fa-expand"></i>
+                            <span id="fullscreenBtnText">Full Screen</span>
+                        </button>
+                        
+                        <!-- Download PDF Button -->
+                        <button onclick="downloadPDF()" class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg text-sm transition duration-300 shadow-md transform hover:scale-[1.02] active:scale-[0.98]">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>Download PDF</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Dynamic Sized Output Display Box -->
@@ -464,6 +473,10 @@
             const printElement = document.createElement('div');
             printElement.className = 'bg-white text-slate-900 p-8 font-sans';
             printElement.style.width = '800px';
+            printElement.style.position = 'absolute';
+            printElement.style.left = '-9999px';
+            printElement.style.top = '0';
+            
             printElement.innerHTML = `
                 <div style="border-bottom: 2px solid #6366f1; padding-bottom: 12px; margin-bottom: 24px;">
                     <h1 style="font-size: 24px; font-weight: 800; color: #4f46e5; margin: 0;">Live Event Annotation</h1>
@@ -498,7 +511,37 @@
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
             
-            html2pdf().from(printElement).set(opt).save();
+            // Append temporarily to body so html2canvas can read it, then remove
+            document.body.appendChild(printElement);
+            html2pdf().from(printElement).set(opt).save().then(() => {
+                document.body.removeChild(printElement);
+            });
+        }
+
+        function toggleFullscreen() {
+            const container = document.getElementById('resultContainer');
+            const outputBox = document.getElementById('outputBox');
+            const isFull = container.classList.contains('fixed');
+            
+            if (!isFull) {
+                // Enter fullscreen
+                container.setAttribute('data-orig-classes', container.className);
+                container.className = 'fixed inset-0 z-50 bg-slate-950 p-8 sm:p-12 h-screen w-screen overflow-y-auto flex flex-col space-y-6';
+                outputBox.classList.remove('bg-slate-950/80');
+                outputBox.classList.add('bg-slate-900/40', 'flex-1', 'overflow-y-auto');
+                document.body.classList.add('overflow-hidden');
+                document.getElementById('fullscreenBtnText').innerText = 'Exit Full Screen';
+                document.getElementById('fullscreenIcon').className = 'fa-solid fa-compress';
+            } else {
+                // Exit fullscreen
+                const origClasses = container.getAttribute('data-orig-classes');
+                container.className = origClasses;
+                outputBox.classList.remove('bg-slate-900/40', 'flex-1', 'overflow-y-auto');
+                outputBox.classList.add('bg-slate-950/80');
+                document.body.classList.remove('overflow-hidden');
+                document.getElementById('fullscreenBtnText').innerText = 'Full Screen';
+                document.getElementById('fullscreenIcon').className = 'fa-solid fa-expand';
+            }
         }
     </script>
 </body>

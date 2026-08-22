@@ -141,14 +141,8 @@ def annotate():
             print(f"Analysis warning: {e}")
             
         if not markdown:
-            markdown = (
-                "# 📝 Live Event Annotation\n\n"
-                "### Summary\n"
-                f"Successfully captured event: {url}\n\n"
-                "### Learning Roadmap\n"
-                "- [ ] Review session notes and video highlights.\n"
-                "- [ ] Check out linked resources.\n"
-            )
+            from app import FALLBACK_MARKDOWN
+            markdown = FALLBACK_MARKDOWN
 
         # Step 4: Pushing to Notion (Skip or Mock if credentials are not provided)
         if is_mock_mode:
