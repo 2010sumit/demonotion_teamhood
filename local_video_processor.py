@@ -1248,7 +1248,13 @@ class ScribeApp:
     def setup_ui(self):
         # Apply Styling
         style = ttk.Style()
-        style.theme_use('vista')
+        try:
+            style.theme_use('vista')
+        except Exception:
+            try:
+                style.theme_use('clam')
+            except Exception:
+                pass
         
         main_frame = ttk.Frame(self.root, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)

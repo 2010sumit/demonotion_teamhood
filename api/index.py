@@ -31,9 +31,8 @@ def annotate():
         notion_token = config.NOTION_TOKEN
         db_id = config.NOTION_DATABASE_ID
         
-        # Check if keys are set
-        if not notion_token or "placeholder" in notion_token:
-            return jsonify({'error': 'Notion API credentials are not set on the server.'}), 400
+        # Check if keys are set (gracefully handle placeholder mode for offline/preview demo)
+        is_mock_mode = (not notion_token or "placeholder" in notion_token or not db_id or "placeholder" in db_id)
 
         # Base64 frames accumulator for vision model analysis
         base64_frames = []
@@ -151,14 +150,19 @@ def annotate():
                 "- [ ] Check out linked resources.\n"
             )
 
-        # Step 4: Pushing to Notion
-        db_entry_url = log_to_notion(notion_token, db_id, url, transcription, markdown)
+        # Step 4: Pushing to Notion (Skip or Mock if credentials are not provided)
+        if is_mock_mode:
+            db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
+            print("[*] Notion sync skipped (offline/mock mode active)")
+        else:
+            db_entry_url = log_to_notion(notion_token, db_id, url, transcription, markdown)
         
         return jsonify({
             'success': True,
             'notion_url': db_entry_url,
             'markdown': markdown,
-            'message': 'Annotation successfully processed!'
+            'is_mock_mode': is_mock_mode,
+            'message': 'Annotation successfully processed!' if not is_mock_mode else 'Processed in Sandbox Mode (Notion Sync Skipped due to placeholder credentials)!'
         })
         
     except Exception as e:
@@ -171,6 +175,27 @@ def annotate():
                 os.remove(temp_filepath)
             except Exception as e:
                 print(f"Cleanup warning: {e}")
+
+@app.route('/api/config-status', methods=['GET'])
+def config_status():
+    """Securely returns status of configured APIs without exposing keys."""
+    try:
+        openrouter_key = config.OPENROUTER_API_KEY
+        gemini_key = config.GEMINI_API_KEY
+        groq_key = config.GROQ_API_KEY
+        notion_token = config.NOTION_TOKEN
+        db_id = config.NOTION_DATABASE_ID
+        
+        return jsonify({
+            'success': True,
+            'openrouter': bool(openrouter_key and not openrouter_key.startswith("your_")),
+            'gemini': bool(gemini_key and not gemini_key.startswith("your_")),
+            'groq': bool(groq_key and not groq_key.startswith("your_")),
+            'notion_token': bool(notion_token and not notion_token.startswith("your_")),
+            'notion_db': bool(db_id and not db_id.startswith("your_"))
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # For local testing
 if __name__ == '__main__':
