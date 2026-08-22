@@ -19,31 +19,36 @@
             -webkit-text-fill-color: transparent;
         }
         .glassmorphism {
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(75, 85, 99, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .crisp-border {
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-violet-600 selection:text-white">
+<body class="bg-[#0B0F19] text-slate-100 font-sans min-h-screen selection:bg-violet-600 selection:text-white">
 
     <!-- Header Section -->
-    <header class="relative overflow-hidden py-16 sm:py-24 border-b border-slate-900">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-violet-900/20 via-slate-950 to-slate-950 -z-10"></div>
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-800 text-sm text-violet-400 font-medium mb-6">
-                <i class="fa-solid fa-code-fork"></i>
+    <header class="relative overflow-hidden py-24 sm:py-32 border-b border-slate-900/40">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-violet-950/20 via-[#0B0F19] to-[#0B0F19] -z-10"></div>
+        <div class="max-w-5xl mx-auto px-6 text-center space-y-8">
+            <div class="inline-flex items-center space-x-2 bg-slate-900/40 px-4 py-1.5 rounded-full border border-white/5 text-xs text-violet-400 font-medium tracking-wide uppercase">
+                <i class="fa-solid fa-bolt mr-1"></i>
                 <span>Hackathon Notion Track Submission</span>
             </div>
-            <h1 class="text-4xl sm:text-6xl font-black tracking-tight mb-6">
-                Live Event <span class="gradient-text">Annotator</span>
+            <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white leading-tight">
+                Turn Live Media into <br class="hidden sm:inline" />
+                <span class="gradient-text font-black">Notion Databases. Instantly.</span>
             </h1>
-            <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-                A standalone pipeline prototype designed to ingest live media, synthesize structured learning roadmaps using Gemini AI, and log annotations directly into Notion databases.
+            <p class="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                Automate transcriptions, extract keyframe slides, and sync clean Markdown learning roadmaps in seconds.
             </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="#search-engine" class="px-6 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-violet-900/30 transition duration-300">
-                    <i class="fa-solid fa-circle-play mr-2"></i> Get Started
+            <div class="pt-4">
+                <a href="#search-engine" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-violet-900/20 hover:shadow-violet-800/30 hover:scale-[1.02] active:scale-[0.98] transition duration-300">
+                    <span>Get Started Free</span>
+                    <i class="fa-solid fa-arrow-right ml-2 text-sm"></i>
                 </a>
             </div>
         </div>
@@ -61,11 +66,11 @@
             </div>
 
             <!-- Tab Buttons -->
-            <div class="flex justify-center space-x-4 mb-8 bg-slate-900/80 p-1.5 rounded-xl max-w-sm mx-auto border border-slate-800">
-                <button id="tabUrlBtn" onclick="switchTab('url')" class="flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 bg-violet-600 text-white">
+            <div class="flex justify-center space-x-2 mb-8 bg-slate-900/40 p-1 rounded-xl max-w-xs mx-auto border border-white/5 backdrop-blur-md">
+                <button id="tabUrlBtn" onclick="switchTab('url')" class="flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 bg-gradient-to-b from-violet-600/20 to-indigo-600/30 border border-violet-500/30 text-white shadow-inner">
                     <i class="fa-solid fa-link mr-1.5"></i> Video URL
                 </button>
-                <button id="tabFileBtn" onclick="switchTab('file')" class="flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 text-slate-400 hover:text-slate-200">
+                <button id="tabFileBtn" onclick="switchTab('file')" class="flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent">
                     <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Local File
                 </button>
             </div>
@@ -166,97 +171,135 @@
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Key Features -->
+    </sect    <!-- Core Features Section (Bento Grid) -->
     <main class="max-w-6xl mx-auto px-4 py-10">
         <section class="mb-20">
-            <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12">Core Features</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Ingestion -->
-                <div class="glassmorphism p-8 rounded-2xl">
-                    <div class="w-12 h-12 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center text-xl mb-6 border border-blue-500/30">
-                        <i class="fa-solid fa-cloud-arrow-down"></i>
+            <h2 class="text-3xl font-extrabold text-white text-center mb-16 tracking-tight">Core Ingestion Engine Features</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Large Feature: Ingestion & Transcribe -->
+                <div class="md:col-span-2 relative overflow-hidden bg-slate-900/30 border border-white/5 rounded-3xl p-8 hover:border-violet-500/30 transition duration-500 group">
+                    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl group-hover:bg-violet-600/15 transition duration-500"></div>
+                    <div class="relative z-10 space-y-4">
+                        <div class="w-10 h-10 bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">Universal Media Ingestion</h3>
+                        <p class="text-slate-400 text-sm max-w-xl leading-relaxed">
+                            Support for YouTube URLs, Shorts, and local audio/video file formats (MP4, MP3, WAV, M4A). Auto-chunks media streams to process large datasets without Vercel serverless memory overflows.
+                        </p>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Universal Ingestion</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Extracts high-quality audio streams and keyframe slides from YouTube URLs, social media links, or local video/audio files directly.
-                    </p>
                 </div>
-                <!-- AI Synthesis -->
-                <div class="glassmorphism p-8 rounded-2xl">
-                    <div class="w-12 h-12 bg-violet-600/20 text-violet-400 rounded-xl flex items-center justify-center text-xl mb-6 border border-violet-500/30">
-                        <i class="fa-solid fa-brain"></i>
+
+                <!-- Small Feature: Direct Notion Integration -->
+                <div class="relative overflow-hidden bg-slate-900/30 border border-white/5 rounded-3xl p-8 hover:border-violet-500/30 transition duration-500 group">
+                    <div class="absolute -right-20 -bottom-20 w-40 h-40 bg-pink-600/10 rounded-full blur-2xl group-hover:bg-pink-600/15 transition duration-500"></div>
+                    <div class="relative z-10 space-y-4">
+                        <div class="w-10 h-10 bg-pink-600/10 text-pink-400 border border-pink-500/20 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-file-invoice"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Direct Notion Sync</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Synthesizes Markdown output and automatically injects formatted data blocks directly into Notion workspace databases at runtime.
+                        </p>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Multimodal AI Synthesis</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Uses Google Gemini 1.5 Flash (via OpenRouter) to combine transcriptions and keyframes into clean, structured Markdown learning roadmaps.
-                    </p>
                 </div>
-                <!-- Notion Sync -->
-                <div class="glassmorphism p-8 rounded-2xl">
-                    <div class="w-12 h-12 bg-pink-600/20 text-pink-400 rounded-xl flex items-center justify-center text-xl mb-6 border border-pink-500/30">
-                        <i class="fa-solid fa-file-invoice"></i>
+
+                <!-- Medium Feature: Gemini Multimodal Scribe -->
+                <div class="relative overflow-hidden bg-slate-900/30 border border-white/5 rounded-3xl p-8 hover:border-violet-500/30 transition duration-500 group">
+                    <div class="absolute -right-20 -bottom-20 w-40 h-40 bg-blue-600/10 rounded-full blur-2xl group-hover:bg-blue-600/15 transition duration-500"></div>
+                    <div class="relative z-10 space-y-4">
+                        <div class="w-10 h-10 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Gemini Multimodal AI</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Runs vision analyses on video keyframes combined with audio transcripts, producing structured checklists and learning paths.
+                        </p>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Direct Notion Integration</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Parses synthesized Markdown output dynamically and pushes formatted tables, code fences, and logs straight to your Notion Database.
-                    </p>
+                </div>
+
+                <!-- Large Accent Glow Feature: Interactive Scribe Visualizer -->
+                <div class="md:col-span-2 relative overflow-hidden bg-slate-900/30 border border-white/5 rounded-3xl p-8 hover:border-violet-500/30 transition duration-500 group">
+                    <div class="absolute -left-20 -top-20 w-60 h-60 bg-violet-600/10 rounded-full blur-3xl"></div>
+                    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-violet-900/20 rounded-full blur-3xl group-hover:bg-violet-900/25 transition duration-500"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-4 max-w-md">
+                            <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-xl flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-expand"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white">High-Fidelity Document Scribe</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                View generated documents dynamically, toggle full-screen view for granular code analysis, and export high-fidelity PDFs preserving exact styles.
+                            </p>
+                        </div>
+                        <div class="w-full md:w-48 h-32 bg-slate-950/60 border border-white/5 rounded-2xl p-4 flex flex-col justify-between shadow-inner">
+                            <div class="flex items-center space-x-2 text-[10px] text-slate-500 font-mono">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span>PDF Rendering Engine</span>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="h-2 w-3/4 bg-violet-500/20 rounded"></div>
+                                <div class="h-2 w-1/2 bg-violet-500/15 rounded"></div>
+                                <div class="h-2 w-5/6 bg-indigo-500/10 rounded"></div>
+                            </div>
+                            <div class="text-[10px] text-violet-400 font-bold self-end flex items-center space-x-1">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                <span>PDF Ready</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
-        <!-- Collapsible Developer/User Guide -->
-        <section class="max-w-4xl mx-auto px-4 pb-16 mt-8">
-            <details class="glassmorphism rounded-xl border border-slate-800 transition duration-300">
-                <summary class="flex justify-between items-center p-4 cursor-pointer text-sm font-semibold text-slate-400 hover:text-slate-200 select-none">
-                    <span>⚙️ Developer Guide & Local Setup (for local execution)</span>
-                </summary>
-                <div class="p-6 border-t border-slate-900/80 space-y-6">
-                    <div class="bg-slate-950/80 border border-slate-900 rounded-xl overflow-hidden">
-                        <div class="bg-slate-900/40 px-4 py-3 border-b border-slate-900 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-400 font-mono">1. Clone & Set Up Directory</span>
+
+        <!-- How to Operate Section -->
+        <section class="max-w-4xl mx-auto px-4 pb-24 mt-8">
+            <div class="bg-slate-900/20 border border-slate-800/80 rounded-3xl p-8 sm:p-12 relative overflow-hidden backdrop-blur-md">
+                <div class="absolute -top-20 -right-20 w-60 h-60 bg-violet-600/5 rounded-full blur-3xl"></div>
+                <h2 class="text-2xl font-bold text-white mb-8 flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-violet-600/10 text-violet-400 border border-violet-500/20 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </span>
+                    <span>How to Operate</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                    <!-- Step 1 -->
+                    <div class="space-y-3">
+                        <div class="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-violet-600/10 text-violet-400 border border-violet-500/20 text-xs font-semibold">
+                            Step 1
                         </div>
-                        <div class="p-4 font-mono text-xs text-slate-400 overflow-x-auto">
-                            <p class="text-slate-600"># Clone the repository and install dependencies</p>
-                            <p>git clone &lt;your-repo-url&gt;</p>
-                            <p>cd &quot;demo p&quot;</p>
-                            <p>pip install -r requirements.txt</p>
-                        </div>
+                        <h4 class="font-bold text-slate-200 text-sm">Connect Workspace</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Configure your Notion Integration Token and Database ID in your Vercel/environment settings to establish a secure database bridge.
+                        </p>
                     </div>
 
-                    <div class="bg-slate-950/80 border border-slate-900 rounded-xl overflow-hidden">
-                        <div class="bg-slate-900/40 px-4 py-3 border-b border-slate-900 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-400 font-mono">2. Setup Environment Variables (.env)</span>
+                    <!-- Step 2 -->
+                    <div class="space-y-3">
+                        <div class="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-violet-600/10 text-violet-400 border border-violet-500/20 text-xs font-semibold">
+                            Step 2
                         </div>
-                        <div class="p-4 font-mono text-xs text-slate-400 overflow-x-auto">
-                            <p class="text-slate-600"># Create a .env file and add your credentials</p>
-                            <p>GEMINI_API_KEY=your_gemini_key</p>
-                            <p>NOTION_TOKEN=your_notion_integration_token</p>
-                            <p>NOTION_DATABASE_ID=your_database_id</p>
-                            <p>OPENROUTER_API_KEY=your_openrouter_api_key</p>
-                        </div>
+                        <h4 class="font-bold text-slate-200 text-sm">Input Media Stream</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Paste any online Video URL (like YouTube / Shorts) or drag-and-drop a Local File directly (maximum file size 4.5MB).
+                        </p>
                     </div>
 
-                    <div class="bg-slate-950/80 border border-slate-900 rounded-xl overflow-hidden">
-                        <div class="bg-slate-900/40 px-4 py-3 border-b border-slate-900 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-400 font-mono">3. Start the Pipeline Applications</span>
+                    <!-- Step 3 -->
+                    <div class="space-y-3">
+                        <div class="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-violet-600/10 text-violet-400 border border-violet-500/20 text-xs font-semibold">
+                            Step 3
                         </div>
-                        <div class="p-4 font-mono text-xs text-slate-400 space-y-3 overflow-x-auto">
-                            <div>
-                                <p class="text-slate-600"># Run the desktop client with interactive UI</p>
-                                <p class="text-violet-400 font-semibold">Launch_KNIGHTHOOD_Engine.bat</p>
-                            </div>
-                            <hr class="border-slate-900">
-                            <div>
-                                <p class="text-slate-600"># Or run the mock pipeline looping listener</p>
-                                <p class="text-blue-400 font-semibold">python app.py --loop --interval 30</p>
-                            </div>
-                        </div>
+                        <h4 class="font-bold text-slate-200 text-sm">Automate Roadmaps</h4>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Click "Upload & Annotate" to let Gemini extract slide screenshots, transcribe audio, and sync formatted notes to Notion.
+                        </p>
                     </div>
                 </div>
-            </details>
+            </div>
         </section>
-
     </main>
 
     <!-- Footer -->
@@ -277,14 +320,14 @@
             const buttonText = document.getElementById('buttonText');
 
             if (mode === 'url') {
-                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 bg-violet-600 text-white';
-                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 text-slate-400 hover:text-slate-200';
+                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 bg-gradient-to-b from-violet-600/20 to-indigo-600/30 border border-violet-500/30 text-white shadow-inner';
+                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent';
                 urlContainer.classList.remove('hidden');
                 fileContainer.classList.add('hidden');
                 buttonText.innerText = 'Process & Annotate to Notion';
             } else {
-                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 bg-violet-600 text-white';
-                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-sm transition duration-300 text-slate-400 hover:text-slate-200';
+                tabFileBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 bg-gradient-to-b from-violet-600/20 to-indigo-600/30 border border-violet-500/30 text-white shadow-inner';
+                tabUrlBtn.className = 'flex-1 py-2 px-4 rounded-lg font-semibold text-xs transition duration-300 text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent';
                 urlContainer.classList.add('hidden');
                 fileContainer.classList.remove('hidden');
                 buttonText.innerText = 'Upload & Annotate to Notion';
@@ -432,15 +475,15 @@
             
             // Code blocks (```lang ... ```)
             html = html.replace(/```(\w*)\n([\s\S]*?)\n```/g, function(match, lang, code) {
-                return `<pre class="bg-slate-950/80 p-4 rounded-lg my-4 overflow-x-auto text-xs font-mono border border-slate-800 text-violet-300"><code class="language-${lang}">${code}</code></pre>`;
+                return `<pre class="bg-slate-950 p-4 rounded-lg my-4 overflow-x-auto text-xs font-mono border border-slate-800/80 text-slate-100"><code class="language-${lang}">${code}</code></pre>`;
             });
             
             // Inline code (`code`)
-            html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-900 px-1.5 py-0.5 rounded text-pink-400 font-mono text-sm border border-slate-800">$1</code>');
+            html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-900 px-1.5 py-0.5 rounded text-pink-300 font-mono text-sm border border-slate-800/60">$1</code>');
             
             // Headers
-            html = html.replace(/^### (.*$)/gim, '<h4 class="text-base font-bold mt-6 mb-2 text-slate-200 border-b border-slate-800 pb-1">$1</h4>');
-            html = html.replace(/^## (.*$)/gim, '<h3 class="text-lg font-bold mt-8 mb-3 text-violet-400">$1</h3>');
+            html = html.replace(/^### (.*$)/gim, '<h4 class="text-base font-bold mt-6 mb-2 text-slate-100 border-b border-slate-800/50 pb-1">$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h3 class="text-lg font-bold mt-8 mb-3 text-violet-300">$1</h3>');
             html = html.replace(/^# (.*$)/gim, '<h2 class="text-xl font-black mt-10 mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400 border-b-2 border-slate-800 pb-2">$1</h2>');
             
             // Checkboxes (- [ ] or - [x])
@@ -448,10 +491,10 @@
             html = html.replace(/^- \[x\]/gim, '<div class="flex items-center space-x-2 my-2"><input type="checkbox" checked disabled class="rounded border-slate-700 bg-slate-900 text-violet-600 focus:ring-violet-500 h-4 w-4"><span class="line-through text-slate-500">');
             
             // Lists
-            html = html.replace(/^- (.*$)/gim, '<li class="list-disc list-inside pl-2 my-1.5 text-slate-300">$1</li>');
+            html = html.replace(/^- (.*$)/gim, '<li class="list-disc list-inside pl-2 my-1.5 text-slate-200">$1</li>');
             
             // Callouts / Alert block (💡 or > 💡)
-            html = html.replace(/^> \*(.*?)\*(.*$)/gim, '<blockquote class="border-l-4 border-violet-500 bg-violet-950/20 px-4 py-3 rounded-r-lg my-4 text-slate-300 italic font-medium">$1$2</blockquote>');
+            html = html.replace(/^> \*(.*?)\*(.*$)/gim, '<blockquote class="border-l-4 border-violet-500 bg-violet-950/20 px-4 py-3 rounded-r-lg my-4 text-slate-200 italic font-medium">$1$2</blockquote>');
             
             // Paragraph split
             let paragraphs = html.split('\n\n');
@@ -460,7 +503,7 @@
                 if (trimmed.startsWith('<h') || trimmed.startsWith('<pre') || trimmed.startsWith('<li') || trimmed.startsWith('<div') || trimmed.startsWith('<blockquote')) {
                     return trimmed;
                 }
-                return trimmed ? `<p class="my-4 text-slate-300 leading-relaxed text-sm">${trimmed}</p>` : '';
+                return trimmed ? `<p class="my-4 text-slate-200 leading-relaxed text-sm">${trimmed}</p>` : '';
             }).join('\n');
             
             return html;
@@ -469,52 +512,104 @@
         function downloadPDF() {
             const outputElement = document.getElementById('outputBox');
             
-            // Create a temporary element for printing with light background
+            // Create a parent container positioned behind the main body to ensure full layout rendering
+            const printContainer = document.createElement('div');
+            printContainer.style.position = 'absolute';
+            printContainer.style.top = '0';
+            printContainer.style.left = '0';
+            printContainer.style.width = '800px';
+            printContainer.style.zIndex = '-999';
+            printContainer.style.pointerEvents = 'none';
+            printContainer.style.overflow = 'visible';
+            
+            // Create a temporary element for printing with high-fidelity dark theme background
             const printElement = document.createElement('div');
-            printElement.className = 'bg-white text-slate-900 p-8 font-sans';
+            printElement.className = 'bg-[#0B0F19] text-slate-200 p-8 font-sans';
             printElement.style.width = '800px';
-            printElement.style.position = 'absolute';
-            printElement.style.left = '-9999px';
-            printElement.style.top = '0';
+            printElement.style.backgroundColor = '#0B0F19';
+            printElement.style.color = '#cbd5e1';
             
             printElement.innerHTML = `
-                <div style="border-bottom: 2px solid #6366f1; padding-bottom: 12px; margin-bottom: 24px;">
-                    <h1 style="font-size: 24px; font-weight: 800; color: #4f46e5; margin: 0;">Live Event Annotation</h1>
-                    <p style="font-size: 11px; color: #6b7280; margin: 4px 0 0 0;">Generated by Team KNIGHTHOOD Scribe Engine</p>
+                <div style="border-bottom: 2px solid rgba(139, 92, 246, 0.3); padding-bottom: 12px; margin-bottom: 24px;">
+                    <h1 style="font-size: 24px; font-weight: 800; color: #a78bfa; margin: 0; font-family: sans-serif;">Live Event Annotation</h1>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0; font-family: sans-serif;">Generated by Team KNIGHTHOOD Scribe Engine</p>
                 </div>
-                <div style="font-size: 14px; line-height: 1.6;">
+                <div style="font-size: 14px; line-height: 1.6; color: #cbd5e1; font-family: sans-serif;">
                     ${outputElement.innerHTML}
                 </div>
             `;
             
-            // Format links and pre tags for white background printing
+            // Explicitly style headers for PDF engine compatibility
+            const h2Tags = printElement.querySelectorAll('h2');
+            h2Tags.forEach(tag => {
+                tag.style.color = '#3b82f6'; // Bright blue
+                tag.style.fontSize = '20px';
+                tag.style.fontWeight = '800';
+                tag.style.marginTop = '24px';
+                tag.style.marginBottom = '12px';
+                tag.style.borderBottom = '2px solid #1e293b';
+                tag.style.paddingBottom = '8px';
+                tag.style.pageBreakAfter = 'avoid'; // Prevent orphan headings
+            });
+            
+            const h3Tags = printElement.querySelectorAll('h3');
+            h3Tags.forEach(tag => {
+                tag.style.color = '#a78bfa'; // Bright violet
+                tag.style.fontSize = '18px';
+                tag.style.fontWeight = '700';
+                tag.style.marginTop = '20px';
+                tag.style.marginBottom = '10px';
+                tag.style.pageBreakAfter = 'avoid';
+            });
+
+            const h4Tags = printElement.querySelectorAll('h4');
+            h4Tags.forEach(tag => {
+                tag.style.color = '#f1f5f9'; // Bright slate
+                tag.style.fontSize = '16px';
+                tag.style.fontWeight = '700';
+                tag.style.marginTop = '16px';
+                tag.style.marginBottom = '8px';
+                tag.style.borderBottom = '1px solid #1e293b';
+                tag.style.paddingBottom = '4px';
+                tag.style.pageBreakAfter = 'avoid';
+            });
+            
+            // Format links and pre tags for dark background printing
             const codeBlocks = printElement.querySelectorAll('pre');
             codeBlocks.forEach(block => {
-                block.style.backgroundColor = '#f1f5f9';
-                block.style.color = '#0f172a';
-                block.style.border = '1px solid #cbd5e1';
+                block.style.backgroundColor = '#0f172a';
+                block.style.color = '#e2e8f0'; // Clean high contrast off-white text
+                block.style.border = '1px solid rgba(255, 255, 255, 0.05)';
                 block.style.whiteSpace = 'pre-wrap';
+                block.style.padding = '16px';
+                block.style.borderRadius = '8px';
+                block.style.pageBreakInside = 'avoid'; // Prevent cutting code blocks in half
             });
             
             const inlineCodes = printElement.querySelectorAll('code:not(pre code)');
             inlineCodes.forEach(code => {
-                code.style.backgroundColor = '#f1f5f9';
-                code.style.color = '#db2777';
-                code.style.border = '1px solid #cbd5e1';
+                code.style.backgroundColor = '#1e293b';
+                code.style.color = '#f472b6'; // Bright pink
+                code.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+                code.style.padding = '2px 6px';
+                code.style.borderRadius = '4px';
             });
 
             const opt = {
                 margin:       0.5,
                 filename:     'Live_Event_Annotation.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0B0F19', scrollY: 0, scrollX: 0 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
             };
             
-            // Append temporarily to body so html2canvas can read it, then remove
-            document.body.appendChild(printElement);
+            // Append parent container to active DOM body to allow html2canvas to render it correctly
+            printContainer.appendChild(printElement);
+            document.body.appendChild(printContainer);
+            
             html2pdf().from(printElement).set(opt).save().then(() => {
-                document.body.removeChild(printElement);
+                document.body.removeChild(printContainer);
             });
         }
 
