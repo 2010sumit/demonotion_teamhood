@@ -150,7 +150,8 @@
                     <p>• Generating AI transcription summary...</p>
                     <p>• Syncing database entries...</p>
                 </div>
-            </             <!-- Result Success Section -->
+            </div>
+            <!-- Result Success Section -->
             <div id="resultContainer" class="hidden mt-8 max-w-3xl mx-auto text-left space-y-6 bg-[#0D1B2A]/80 p-6 sm:p-8 rounded-2xl border border-[#D4AF37]/15 shadow-xl">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
                     <div class="flex items-center space-x-3">
@@ -170,12 +171,6 @@
                     
                     <!-- Action Buttons -->
                     <div class="flex items-center space-x-3 shrink-0">
-                        <!-- Full Screen Button -->
-                        <button onclick="toggleFullscreen()" class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#0F172A] hover:bg-[#1E293B] text-slate-200 border border-slate-700/80 font-semibold rounded-lg text-sm transition duration-300 shadow-md">
-                            <i id="fullscreenIcon" class="fa-solid fa-expand"></i>
-                            <span id="fullscreenBtnText">Full Screen</span>
-                        </button>
-                        
                         <!-- Download PDF Button -->
                         <button onclick="downloadPDF()" class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#D4AF37] hover:bg-[#E5C158] text-[#030914] font-semibold rounded-lg text-sm transition duration-300 shadow-md transform hover:scale-[1.02] active:scale-[0.98]">
                             <i class="fa-solid fa-file-pdf"></i>
@@ -186,11 +181,7 @@
                 
                 <!-- Output Wrapper (for Full Screen support) -->
                 <div id="outputWrapper" class="relative w-full transition-all duration-300">
-                    <!-- Floating Exit Full Screen Button (hidden by default) -->
-                    <button id="exitFullscreenFloatingBtn" onclick="toggleFullscreen()" class="hidden fixed top-6 right-6 z-[60] inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#0D1B2A]/90 hover:bg-[#1E293B] text-slate-200 border border-slate-700/80 font-semibold rounded-xl text-sm transition duration-300 shadow-2xl backdrop-blur-md">
-                        <i class="fa-solid fa-compress text-[#FFD700]"></i>
-                        <span>Exit Full Screen</span>
-                    </button>
+
                     
                     <!-- Dynamic Sized Output Display Box -->
                     <div id="outputBox" class="bg-slate-950/80 p-6 sm:p-8 rounded-xl border border-slate-800 text-slate-300 font-sans shadow-inner leading-relaxed text-sm space-y-4">
@@ -667,9 +658,15 @@
                 el.style.breakInside = 'avoid';
             });
 
+            // Append parent container to active DOM body so the browser calculates its real dimensions
+            printContainer.appendChild(printElement);
+            document.body.appendChild(printContainer);
+
             // Dynamic PDF format computation (width 800px maps to 600pt)
             const ptWidth = 800 * 0.75;
-            const ptHeight = printElement.scrollHeight * 0.75;
+            // Now scrollHeight will correctly reflect the rendered height instead of 0.
+            // Add a generous buffer (+ 150 points) to ensure the content is never cut off at the bottom.
+            const ptHeight = (printElement.scrollHeight * 0.75) + 150;
             
             // Define margins in points (36pt = 0.5 inches)
             const marginPt = 36;
@@ -684,13 +681,8 @@
                 filename:     'Live_Event_Annotation.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#030914', scrollY: 0, scrollX: 0 },
-                jsPDF:        { unit: 'pt', format: pdfFormat, orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                jsPDF:        { unit: 'pt', format: pdfFormat, orientation: 'portrait' }
             };
-            
-            // Append parent container to active DOM body to allow html2canvas to render it correctly
-            printContainer.appendChild(printElement);
-            document.body.appendChild(printContainer);
             
             html2pdf().from(printElement).set(opt).save().then(() => {
                 document.body.removeChild(printContainer);
