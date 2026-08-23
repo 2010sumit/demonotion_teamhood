@@ -81,10 +81,35 @@
                 <p class="text-slate-400 text-sm">Select an ingestion method to transcribe and log to Notion database.</p>
             </div>
 
+            <!-- Tab Buttons (Flat Underline Style) -->
+            <div class="flex justify-center space-x-8 mb-8 max-w-xs mx-auto border-b border-slate-800">
+                <button id="tabUrlBtn" onclick="switchTab('url')" class="pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]">
+                    <i class="fa-solid fa-link mr-1.5"></i> Video URL
+                </button>
+                <button id="tabFileBtn" onclick="switchTab('file')" class="pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200">
+                    <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Local File
+                </button>
+            </div>
+
             <!-- Ingestion Container -->
             <div class="max-w-2xl mx-auto space-y-6">
+                <!-- Mode: URL -->
+                <div id="urlInputContainer" class="space-y-4">
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-slate-500">
+                            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                        </span>
+                        <input type="text" id="videoUrl" 
+                               placeholder="Paste YouTube Link or Video URL here..." 
+                               class="w-full pl-12 pr-4 py-4 bg-[#0F172A]/80 border border-slate-700/80 rounded-xl focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] text-slate-200 transition duration-300 font-medium placeholder-slate-500">
+                    </div>
+                    <p class="text-xs text-slate-400 pl-2">
+                        <span class="text-[#FFD700] font-bold">*</span> Note: Currently, only YouTube video links (including Shorts) are supported.
+                    </p>
+                </div>
+
                 <!-- Mode: File Upload -->
-                <div id="fileInputContainer" class="space-y-4">
+                <div id="fileInputContainer" class="hidden space-y-4">
                     <div id="dropZone" onclick="triggerFileSelect()" 
                          class="border-2 border-dashed border-slate-700 hover:border-[#D4AF37] bg-[#0F172A]/50 hover:bg-[#0F172A]/80 rounded-2xl p-8 text-center cursor-pointer transition duration-300 flex flex-col items-center justify-center space-y-3">
                         <div class="text-slate-400 text-4xl group-hover:scale-110 transition duration-300">
@@ -101,7 +126,7 @@
                     <div class="bg-amber-950/20 border border-amber-500/30 rounded-xl p-4 flex items-start space-x-3">
                         <span class="text-amber-500 text-sm mt-0.5"><i class="fa-solid fa-triangle-exclamation"></i></span>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            <strong class="text-amber-400">File Size Limit:</strong> Upload files up to 4.5MB only.
+                            <strong class="text-amber-400">File Size Limit:</strong> Maximum supported file size for direct upload is 4.5MB. For larger videos, please use the <strong class="text-slate-300">Video URL</strong> tab.
                         </p>
                     </div>
                 </div>
@@ -110,7 +135,7 @@
                 <button id="searchBtn" onclick="startAnnotation()" 
                         class="w-full py-4 bg-[#D4AF37] hover:bg-[#E5C158] text-[#030914] font-bold rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span id="buttonText">Upload & Annotate to Notion</span>
+                    <span id="buttonText">Process & Annotate to Notion</span>
                 </button>
             </div>
 
@@ -182,7 +207,7 @@
                         </div>
                         <h3 class="text-2xl font-bold text-white">Universal Media Ingestion</h3>
                         <p class="text-slate-400 text-sm max-w-xl leading-relaxed">
-                            Upload local audio/video files (MP4, MP3, WAV, M4A) for transcription, keyframe extraction, and structured notes.
+                            Support for YouTube URLs, Shorts, and local audio/video file formats (MP4, MP3, WAV, M4A). Auto-chunks media streams to process large datasets without Vercel serverless memory overflows.
                         </p>
                     </div>
                 </div>
@@ -279,7 +304,7 @@
                         </div>
                         <h4 class="font-bold text-slate-200 text-sm">Input Media Stream</h4>
                         <p class="text-slate-400 text-xs leading-relaxed">
-                            Drag-and-drop a local audio or video file directly (maximum file size 4.5MB).
+                            Paste any online Video URL (like YouTube / Shorts) or drag-and-drop a Local File directly (maximum file size 4.5MB).
                         </p>
                     </div>
 
@@ -305,7 +330,31 @@
 
     <!-- Interactive Script -->
     <script>
-        function resetResults() {
+        let currentMode = 'url'; // 'url' or 'file'
+
+        function switchTab(mode) {
+            currentMode = mode;
+            const tabUrlBtn = document.getElementById('tabUrlBtn');
+            const tabFileBtn = document.getElementById('tabFileBtn');
+            const urlContainer = document.getElementById('urlInputContainer');
+            const fileContainer = document.getElementById('fileInputContainer');
+            const buttonText = document.getElementById('buttonText');
+
+            if (mode === 'url') {
+                tabUrlBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]';
+                tabFileBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200';
+                urlContainer.classList.remove('hidden');
+                fileContainer.classList.add('hidden');
+                buttonText.innerText = 'Process & Annotate to Notion';
+            } else {
+                tabFileBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]';
+                tabUrlBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200';
+                urlContainer.classList.add('hidden');
+                fileContainer.classList.remove('hidden');
+                buttonText.innerText = 'Upload & Annotate to Notion';
+            }
+            
+            // Reset results/status when switching tabs
             document.getElementById('statusContainer').classList.add('hidden');
             document.getElementById('resultContainer').classList.add('hidden');
         }
@@ -322,7 +371,7 @@
                 fileText.innerHTML = `<span class="text-violet-400 font-bold">${file.name}</span> (${sizeInMB} MB)`;
                 
                 if (file.size > 4.5 * 1024 * 1024) {
-                    alert(`Warning: Selected file is ${sizeInMB}MB. The upload limit is 4.5MB. Please compress the file.`);
+                    alert(`Warning: Selected file is ${sizeInMB}MB. The upload limit is 4.5MB. Please compress the file or use a YouTube URL.`);
                 }
             } else {
                 fileText.innerText = 'Click to browse or drag and drop file here';
@@ -345,26 +394,41 @@
             let body = null;
             let headers = {};
 
-            const fileInput = document.getElementById('localFile');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please select a local video or audio file first.');
-                return;
-            }
+            if (currentMode === 'url') {
+                const urlInput = document.getElementById('videoUrl').value.trim();
+                if (!urlInput) {
+                    alert('Please enter a valid video URL.');
+                    return;
+                }
+                body = JSON.stringify({ url: urlInput });
+                headers['Content-Type'] = 'application/json';
+            } else {
+                const fileInput = document.getElementById('localFile');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select a local video or audio file first.');
+                    return;
+                }
+                
+                const isLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                
+                // Limit check (only block if not running on local server)
+                if (!isLocalServer && file.size > 4.5 * 1024 * 1024) {
+                    alert('File size exceeds the 4.5MB upload limit. Please use the Video URL tab or upload a smaller file.');
+                    return;
+                }
+                
+                // Safety limit for local server (e.g. 500MB)
+                if (file.size > 500 * 1024 * 1024) {
+                    alert('File size exceeds the maximum supported limit of 500MB. Please use the Video URL tab for larger videos.');
+                    return;
+                }
 
-            const isLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            if (!isLocalServer && file.size > 4.5 * 1024 * 1024) {
-                alert('File size exceeds the 4.5MB upload limit. Please upload a smaller file.');
-                return;
+                const formData = new FormData();
+                formData.append('file', file);
+                body = formData;
+                // Fetch will set Content-Type header to multipart/form-data with boundary automatically for FormData
             }
-            if (file.size > 500 * 1024 * 1024) {
-                alert('File size exceeds the maximum supported limit of 500MB.');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-            body = formData;
             
             // Reset and show loading state
             statusContainer.classList.remove('hidden');
