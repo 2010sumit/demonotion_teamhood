@@ -3,7 +3,7 @@
 > ## Important Project Information
 >
 > 
-> FULLY DEPLOYED LINK = https://demonotion-teamhood-hhzd.vercel.app/
+> FULLY DEPLOYED LINK = https://demonotion-teamhood.vercel.app/
 
 
 > 
@@ -49,5 +49,5 @@ PPT = https://www.image2url.com/r2/default/documents/1787465870586-4ca15d63-a0c6
 
 
 
+FULLY DEPLOYED LINK BUT HALF FUNCTIONAL SITE = https://demonotion-teamhood-hhzd.vercel.app/
 
-FULLY DEPLOYED LINK BUT HALF FUNCTIONAL SITE = https://demonotion-teamhood.vercel.app/
