@@ -81,10 +81,35 @@
                 <p class="text-slate-400 text-sm">Select an ingestion method to transcribe and log to Notion database.</p>
             </div>
 
+            <!-- Tab Buttons (Flat Underline Style) -->
+            <div class="flex justify-center space-x-8 mb-8 max-w-xs mx-auto border-b border-slate-800">
+                <button id="tabUrlBtn" onclick="switchTab('url')" class="pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]">
+                    <i class="fa-solid fa-link mr-1.5"></i> Video URL
+                </button>
+                <button id="tabFileBtn" onclick="switchTab('file')" class="pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200">
+                    <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Local File
+                </button>
+            </div>
+
             <!-- Ingestion Container -->
             <div class="max-w-2xl mx-auto space-y-6">
+                <!-- Mode: URL -->
+                <div id="urlInputContainer" class="space-y-4">
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-slate-500">
+                            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                        </span>
+                        <input type="text" id="videoUrl" 
+                               placeholder="Paste YouTube Link or Video URL here..."
+                               class="w-full pl-12 pr-4 py-4 bg-[#0F172A]/80 border border-slate-700/80 rounded-xl focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] text-slate-200 transition duration-300 font-medium placeholder-slate-500">
+                    </div>
+                    <p class="text-xs text-slate-400 pl-2">
+                        <span class="text-[#FFD700] font-bold">*</span> Note: Currently, only YouTube video links (including Shorts) are supported.
+                    </p>
+                </div>
+
                 <!-- Mode: File Upload -->
-                <div id="fileInputContainer" class="space-y-4">
+                <div id="fileInputContainer" class="hidden space-y-4">
                     <div id="dropZone" onclick="triggerFileSelect()" 
                          class="border-2 border-dashed border-slate-700 hover:border-[#D4AF37] bg-[#0F172A]/50 hover:bg-[#0F172A]/80 rounded-2xl p-8 text-center cursor-pointer transition duration-300 flex flex-col items-center justify-center space-y-3">
                         <div class="text-slate-400 text-4xl group-hover:scale-110 transition duration-300">
@@ -305,6 +330,34 @@
 
     <!-- Interactive Script -->
     <script>
+        let currentMode = 'url'; // 'url' or 'file'
+
+        function switchTab(mode) {
+            currentMode = mode;
+            const tabUrlBtn = document.getElementById('tabUrlBtn');
+            const tabFileBtn = document.getElementById('tabFileBtn');
+            const urlContainer = document.getElementById('urlInputContainer');
+            const fileContainer = document.getElementById('fileInputContainer');
+            const buttonText = document.getElementById('buttonText');
+
+            if (mode === 'url') {
+                tabUrlBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]';
+                tabFileBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200';
+                urlContainer.classList.remove('hidden');
+                fileContainer.classList.add('hidden');
+                buttonText.innerText = 'Process & Annotate to Notion';
+            } else {
+                tabFileBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#FFD700] border-b-2 border-[#D4AF37]';
+                tabUrlBtn.className = 'pb-3 px-2 font-semibold text-xs transition duration-300 text-[#64748B] border-b-2 border-transparent hover:text-slate-200';
+                urlContainer.classList.add('hidden');
+                fileContainer.classList.remove('hidden');
+                buttonText.innerText = 'Upload & Annotate to Notion';
+            }
+
+            document.getElementById('statusContainer').classList.add('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+        }
+
         function triggerFileSelect() {
             document.getElementById('localFile').click();
         }
@@ -336,29 +389,41 @@
             const resultContainer = document.getElementById('resultContainer');
             const notionLink = document.getElementById('notionLink');
             const searchBtn = document.getElementById('searchBtn');
-            const fileInput = document.getElementById('localFile');
-            const file = fileInput.files[0];
+            let body = null;
+            let headers = {};
 
-            if (!file) {
-                alert('Please select a local video or audio file first.');
-                return;
+            if (currentMode === 'url') {
+                const urlInput = document.getElementById('videoUrl').value.trim();
+                if (!urlInput) {
+                    alert('Please enter a valid video URL.');
+                    return;
+                }
+                body = JSON.stringify({ url: urlInput });
+                headers['Content-Type'] = 'application/json';
+            } else {
+                const fileInput = document.getElementById('localFile');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select a local video or audio file first.');
+                    return;
+                }
+
+                const isLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                if (!isLocalServer && file.size > 4.5 * 1024 * 1024) {
+                    alert('File size exceeds the 4.5MB upload limit. Please use the Video URL tab or upload a smaller file.');
+                    return;
+                }
+
+                if (file.size > 500 * 1024 * 1024) {
+                    alert('File size exceeds the maximum supported limit of 500MB. Please use the Video URL tab for larger videos.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+                body = formData;
             }
-
-            const isLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-            if (!isLocalServer && file.size > 4.5 * 1024 * 1024) {
-                alert('File size exceeds the 4.5MB upload limit. Please upload a smaller file.');
-                return;
-            }
-
-            if (file.size > 500 * 1024 * 1024) {
-                alert('File size exceeds the maximum supported limit of 500MB.');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-            const body = formData;
             
             // Reset and show loading state
             statusContainer.classList.remove('hidden');
@@ -371,6 +436,7 @@
             try {
                 const response = await fetch('/api/index', {
                     method: 'POST',
+                    headers: headers,
                     body: body
                 });
                 
