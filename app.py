@@ -452,23 +452,9 @@ def run_pipeline(openrouter_key, notion_token, db_id, screenshot_path, model="op
         "children": notion_blocks
     }
     
-    # Perform HTTP post to Notion if configuration exists
-    if notion_token and db_id and not notion_token.startswith("your_") and not db_id.startswith("your_"):
-        log_event("    - Dispatching page insertion payload to official Notion API...")
-        notion_url = "https://api.notion.com/v1/pages"
-        headers = {
-            "Authorization": f"Bearer {notion_token}",
-            "Notion-Version": "2022-06-28",
-            "Content-Type": "application/json"
-        }
-        
-        status_code, response = send_rest_post(notion_url, notion_payload, headers)
-        if status_code == 200:
-            log_event(f"    - SUCCESS: Entry created successfully!")
-            log_event(f"    - Database entry URL: {response.get('url', 'N/A')}")
-        else:
-            log_event(f"    - ERROR: Notion API responded with status {status_code}")
-            log_event(f"    - Response: {json.dumps(response)}")
+    # Notion API post is disabled as per user request
+    if False:
+        pass
     else:
         log_event("    - INFO: Notion credentials not provided or set to defaults.")
         if verbose:

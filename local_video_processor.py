@@ -1047,78 +1047,8 @@ def notion_api_request_with_retry(method, url, headers, json_payload=None, max_r
 
 def log_to_notion(notion_token, db_id, video_path, transcription, markdown_text, log_func=print):
     """Creates a new Notion page and appends the annotated markdown content using rate-limited chunks."""
-    url = "https://api.notion.com/v1/pages"
-    
-    headers = {
-        "Authorization": f"Bearer {notion_token}",
-        "Notion-Version": "2022-06-28",
-        "Content-Type": "application/json"
-    }
-    
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    display_path = video_path if video_path.startswith("http") else os.path.basename(video_path)
-    runtime_logs = (
-        f"Video Path: {display_path}\n"
-        f"Run Time: {current_time}\n"
-        f"Transcript size: {len(transcription)} chars"
-    )
-    
-    notion_blocks = convert_markdown_to_notion_blocks(markdown_text)
-    log_func(f"[*] Converted markdown to {len(notion_blocks)} Notion blocks.")
-    
-    payload_no_children = {
-        "parent": {"database_id": db_id},
-        "properties": {
-            "Topic Name": {
-                "title": [
-                    {"text": {"content": "Live Local Video Annotation Run"}}
-                ]
-            },
-            "Status": {
-                "select": {"name": "Review Pending"}
-            },
-            "Timestamp": {
-                "rich_text": [
-                    {"text": {"content": runtime_logs}}
-                ]
-            }
-        }
-    }
-    
-    log_func("[*] Creating page in Notion database (without child blocks first)...")
-    response = notion_api_request_with_retry("POST", url, headers, payload_no_children)
-    
-    if response.status_code == 200:
-        page_data = response.json()
-        db_entry_url = page_data.get("url", "N/A")
-        page_id = page_data.get("id")
-        log_func(f"[+] Notion page created successfully! URL: {db_entry_url}")
-        
-        # Append blocks in chunks of 50 to prevent size overflow and sleep 0.35s between requests
-        chunk_size = 50
-        block_chunks = [notion_blocks[i:i + chunk_size] for i in range(0, len(notion_blocks), chunk_size)]
-        
-        for i, chunk in enumerate(block_chunks):
-            log_func(f"[*] Appending block chunk {i+1}/{len(block_chunks)} ({len(chunk)} blocks) to Notion...")
-            append_url = f"https://api.notion.com/v1/blocks/{page_id}/children"
-            append_payload = {"children": chunk}
-            append_res = notion_api_request_with_retry("PATCH", append_url, headers, append_payload)
-            if append_res.status_code != 200:
-                log_func(f"[!] Warning: Failed to append block chunk {i+1}: {append_res.text}")
-                
-        log_func("[+] SUCCESS: All blocks appended to Notion page successfully!")
-        
-        # Redirect browser to Notion page on success
-        if db_entry_url and db_entry_url != "N/A":
-            log_func(f"[*] Launching default web browser straight to Notion page...")
-            try:
-                webbrowser.open(db_entry_url)
-            except Exception as e:
-                log_func(f"[!] Warning: Failed to automatically open web browser: {e}")
-                
-        return db_entry_url
-    else:
-        raise Exception(f"Notion API Error {response.status_code}: {response.text}")
+    log_func("[*] Notion sync disabled by user request.")
+    return ""
 
 def create_dummy_jpeg(path):
     """Creates a minimal valid 1x1 black JPEG file if it does not exist."""

@@ -188,16 +188,13 @@ def annotate():
         if not markdown:
             markdown = FALLBACK_MARKDOWN
 
-        # Step 4: Pushing to Notion (Skip or Mock if credentials are not provided)
+        # Step 4: Pushing to Notion (Disabled as requested)
         if is_mock_mode:
             db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
             print("[*] Notion sync skipped (offline/mock mode active)")
         else:
-            try:
-                db_entry_url = log_to_notion(notion_token, db_id, url, transcription, markdown)
-            except Exception as notion_error:
-                print(f"Notion sync warning: {notion_error}")
-                db_entry_url = ""
+            print("[*] Notion sync disabled by user request.")
+            db_entry_url = ""
         
         return jsonify({
             'success': True,
