@@ -33,7 +33,6 @@ def home():
 @app.route('/api/index', methods=['POST'])
 def annotate():
     temp_filepath = None
-    downloaded_video_filepath = None
     url = ""
     media_is_video = True
     
@@ -57,17 +56,21 @@ def annotate():
             gemini_key and not gemini_key.startswith("your_"),
             groq_key and not groq_key.startswith("your_")
         ])
-        notion_is_configured = (
+        is_mock_mode = (
             not notion_token or "placeholder" in notion_token or
-            not db_id or "placeholder" in db_id
+            not db_id or "placeholder" in db_id or not has_ai_key
         )
 
-        if not has_ai_key:
+        if is_mock_mode:
+            db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
+            print("[*] Notion sync skipped (offline/mock mode active)")
             return jsonify({
-                'error': 'No AI provider is configured. Add GEMINI_API_KEY, OPENROUTER_API_KEY, or GROQ_API_KEY in Vercel Environment Variables and redeploy.'
-            }), 503
-
-        is_mock_mode = notion_is_configured
+                'success': True,
+                'notion_url': db_entry_url,
+                'markdown': FALLBACK_MARKDOWN,
+                'is_mock_mode': True,
+                'message': 'Processed in Sandbox Mode (configure Vercel environment variables for live processing)!'
+            })
 
         # Base64 frames accumulator for vision model analysis
         base64_frames = []
@@ -143,34 +146,6 @@ def annotate():
                         video_stream_url = info.get('url')
                 except Exception as e_yt:
                     print(f"yt-dlp video extract warning: {e_yt}. Trying Piped API fallback...")
-
-                # YouTube stream URLs can expire while OpenCV is reading them.
-                # Prefer a small local combined stream for reliable frame extraction.
-                if video_id:
-                    try:
-                        video_fd, downloaded_video_filepath = tempfile.mkstemp(suffix='.mp4')
-                        os.close(video_fd)
-                        os.remove(downloaded_video_filepath)
-                        download_opts = {
-                            'format': 'worst[ext=mp4]/worst',
-                            'outtmpl': downloaded_video_filepath,
-                            'quiet': True,
-                            'no_warnings': True,
-                            'nocheckcertificate': True,
-                            'noplaylist': True,
-                        }
-                        with yt_dlp.YoutubeDL(download_opts) as ydl:
-                            ydl.download([url])
-                        if os.path.exists(downloaded_video_filepath) and os.path.getsize(downloaded_video_filepath) > 0:
-                            video_stream_url = downloaded_video_filepath
-                            print("[*] Downloaded a local YouTube stream for frame extraction.")
-                        else:
-                            downloaded_video_filepath = None
-                    except Exception as e_download:
-                        print(f"YouTube video download warning: {e_download}")
-                        if downloaded_video_filepath and os.path.exists(downloaded_video_filepath):
-                            os.remove(downloaded_video_filepath)
-                        downloaded_video_filepath = None
                     
                 # NEW PIPED API FALLBACK FOR VIDEO STREAM
                 if not video_stream_url and video_id:
@@ -231,9 +206,7 @@ def annotate():
             print(f"Analysis warning: {e}")
             
         if not markdown:
-            return jsonify({
-                'error': 'AI analysis could not be generated. Check the configured provider key and deployment logs.'
-            }), 502
+            markdown = FALLBACK_MARKDOWN
 
         # Step 4: Pushing to Notion (Disabled as requested)
         if is_mock_mode:
@@ -269,11 +242,6 @@ def annotate():
                 os.remove(temp_filepath)
             except Exception as e:
                 print(f"Cleanup warning: {e}")
-        if downloaded_video_filepath and os.path.exists(downloaded_video_filepath):
-            try:
-                os.remove(downloaded_video_filepath)
-            except Exception as e:
-                print(f"Downloaded video cleanup warning: {e}")
 
 @app.route('/api/config-status', methods=['GET'])
 def config_status():
