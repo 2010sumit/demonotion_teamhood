@@ -33,6 +33,7 @@ def home():
 @app.route('/api/index', methods=['POST'])
 def annotate():
     temp_filepath = None
+    downloaded_video_filepath = None
     url = ""
     media_is_video = True
     
@@ -56,21 +57,17 @@ def annotate():
             gemini_key and not gemini_key.startswith("your_"),
             groq_key and not groq_key.startswith("your_")
         ])
-        is_mock_mode = (
+        notion_is_configured = (
             not notion_token or "placeholder" in notion_token or
-            not db_id or "placeholder" in db_id or not has_ai_key
+            not db_id or "placeholder" in db_id
         )
 
-        if is_mock_mode:
-            db_entry_url = "https://notion.so (Offline/Sandbox Mode: Active)"
-            print("[*] Notion sync skipped (offline/mock mode active)")
+        if not has_ai_key:
             return jsonify({
-                'success': True,
-                'notion_url': db_entry_url,
-                'markdown': FALLBACK_MARKDOWN,
-                'is_mock_mode': True,
-                'message': 'Processed in Sandbox Mode (configure Vercel environment variables for live processing)!'
-            })
+                'error': 'No AI provider is configured. Add GEMINI_API_KEY, OPENROUTER_API_KEY, or GROQ_API_KEY in Vercel Environment Variables and redeploy.'
+            }), 503
+
+        is_mock_mode = notion_is_configured
 
         # Base64 frames accumulator for vision model analysis
         base64_frames = []
@@ -140,9 +137,57 @@ def annotate():
                 }
                 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;10000000"
 
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    video_stream_url = info.get('url')
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(url, download=False)
+                        video_stream_url = info.get('url')
+                except Exception as e_yt:
+                    print(f"yt-dlp video extract warning: {e_yt}. Trying Piped API fallback...")
+
+                # YouTube stream URLs can expire while OpenCV is reading them.
+                # Prefer a small local combined stream for reliable frame extraction.
+                if video_id:
+                    try:
+                        video_fd, downloaded_video_filepath = tempfile.mkstemp(suffix='.mp4')
+                        os.close(video_fd)
+                        os.remove(downloaded_video_filepath)
+                        download_opts = {
+                            'format': 'worst[ext=mp4]/worst',
+                            'outtmpl': downloaded_video_filepath,
+                            'quiet': True,
+                            'no_warnings': True,
+                            'nocheckcertificate': True,
+                            'noplaylist': True,
+                        }
+                        with yt_dlp.YoutubeDL(download_opts) as ydl:
+                            ydl.download([url])
+                        if os.path.exists(downloaded_video_filepath) and os.path.getsize(downloaded_video_filepath) > 0:
+                            video_stream_url = downloaded_video_filepath
+                            print("[*] Downloaded a local YouTube stream for frame extraction.")
+                        else:
+                            downloaded_video_filepath = None
+                    except Exception as e_download:
+                        print(f"YouTube video download warning: {e_download}")
+                        if downloaded_video_filepath and os.path.exists(downloaded_video_filepath):
+                            os.remove(downloaded_video_filepath)
+                        downloaded_video_filepath = None
+                    
+                # NEW PIPED API FALLBACK FOR VIDEO STREAM
+                if not video_stream_url and video_id:
+                    import requests
+                    piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
+                    try:
+                        res = requests.get(piped_url, timeout=10)
+                        if res.status_code == 200:
+                            data = res.json()
+                            video_streams = data.get('videoStreams', [])
+                            if video_streams:
+                                # Pick lowest quality video stream for faster keyframe extraction
+                                video_streams.sort(key=lambda x: x.get('bitrate', 99999999))
+                                video_stream_url = video_streams[0]['url']
+                                print("[*] Successfully got video stream from Piped API.")
+                    except Exception as e_piped:
+                        print(f"Piped video fallback failed: {e_piped}")
 
                 base64_frames = extract_keyframes(
                     video_stream_url or url,
@@ -186,7 +231,9 @@ def annotate():
             print(f"Analysis warning: {e}")
             
         if not markdown:
-            markdown = FALLBACK_MARKDOWN
+            return jsonify({
+                'error': 'AI analysis could not be generated. Check the configured provider key and deployment logs.'
+            }), 502
 
         # Step 4: Pushing to Notion (Disabled as requested)
         if is_mock_mode:
@@ -222,6 +269,11 @@ def annotate():
                 os.remove(temp_filepath)
             except Exception as e:
                 print(f"Cleanup warning: {e}")
+        if downloaded_video_filepath and os.path.exists(downloaded_video_filepath):
+            try:
+                os.remove(downloaded_video_filepath)
+            except Exception as e:
+                print(f"Downloaded video cleanup warning: {e}")
 
 @app.route('/api/config-status', methods=['GET'])
 def config_status():

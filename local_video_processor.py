@@ -1162,6 +1162,43 @@ def handle_online_video_url(url, log_func=print):
     except Exception as e_yt:
         log_func(f"[-] yt_dlp download failed or not available: {e_yt}. Falling back to direct network session streaming...")
 
+    # NEW PIPED API FALLBACK FOR YOUTUBE
+    video_id = extract_youtube_video_id(url)
+    if video_id:
+        try:
+            log_func("[*] Using Piped API fallback for YouTube audio extraction...")
+            piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
+            import requests
+            res = requests.get(piped_url, timeout=10)
+            if res.status_code == 200:
+                data = res.json()
+                audio_streams = data.get('audioStreams', [])
+                if audio_streams:
+                    audio_streams.sort(key=lambda x: x.get('bitrate', 0), reverse=True)
+                    stream_url = audio_streams[0]['url']
+                    ext = audio_streams[0].get('format', 'm4a').lower()
+                    log_func("[*] Downloading direct audio stream from Piped API...")
+                    
+                    audio_buffer = io.BytesIO()
+                    with requests.get(stream_url, stream=True, timeout=30) as r:
+                        r.raise_for_status()
+                        max_bytes = 15 * 1024 * 1024 # Limit to 15MB
+                        bytes_written = 0
+                        for chunk in r.iter_content(chunk_size=65536):
+                            if chunk:
+                                audio_buffer.write(chunk)
+                                bytes_written += len(chunk)
+                                if bytes_written >= max_bytes:
+                                    break
+                    audio_buffer.seek(0)
+                    ext_to_mime = {'m4a': 'audio/mp4', 'webm': 'audio/webm', 'mp3': 'audio/mp3', 'wav': 'audio/wav', 'ogg': 'audio/ogg', 'mp4': 'audio/mp4'}
+                    audio_buffer.mime_type = ext_to_mime.get(ext, 'audio/mp3')
+                    audio_buffer.display_name = f"stream.{ext}"
+                    log_func("🟢 [AUDIO CHECK]: Ingestion stream verified (Piped API).")
+                    return audio_buffer
+        except Exception as e_piped:
+            log_func(f"[!] Piped API fallback failed: {e_piped}")
+
     # Fallback to requests streaming (will work for non-YouTube direct media URLs)
     audio_url = url
     ext = "mp3"
@@ -1172,7 +1209,7 @@ def handle_online_video_url(url, log_func=print):
         }
         
         audio_buffer = io.BytesIO()
-        with http_session.get(audio_url, headers=headers, stream=True, timeout=30) as r:
+        with requests.get(audio_url, headers=headers, stream=True, timeout=30) as r:
             r.raise_for_status()
             max_bytes = 10 * 1024 * 1024 # Limit download to 10MB to keep it ultra fast
             bytes_written = 0
@@ -1430,8 +1467,24 @@ class ScribeApp:
                     info = ydl.extract_info(url, download=False)
                     video_stream_url = info.get('url')
             except Exception as e_vid:
-                self.log(f"[-] Could not extract video stream URL for keyframes: {e_vid}")
-                
+                self.log(f"[-] yt-dlp video extract warning: {e_vid}. Trying Piped API fallback...")
+            
+            if not video_stream_url:
+                video_id = extract_youtube_video_id(url)
+                if video_id:
+                    try:
+                        import requests
+                        piped_url = f"https://pipedapi.kavin.rocks/streams/{video_id}"
+                        res = requests.get(piped_url, timeout=10)
+                        if res.status_code == 200:
+                            data = res.json()
+                            video_streams = data.get('videoStreams', [])
+                            if video_streams:
+                                video_streams.sort(key=lambda x: x.get('bitrate', 99999999))
+                                video_stream_url = video_streams[0]['url']
+                                self.log("[*] Successfully got video stream from Piped API.")
+                    except Exception as e_piped:
+                        self.log(f"[!] Piped video fallback failed: {e_piped}")
             if video_stream_url:
                 base64_frames = extract_keyframes(video_stream_url, num_frames=3, log_func=self.log)
             else:
